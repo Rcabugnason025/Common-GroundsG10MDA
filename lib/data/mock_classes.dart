@@ -1,0 +1,103 @@
+import 'package:flutter/material.dart';
+import 'package:commongrounds/model/class.dart';
+
+final List<ClassModel> mockClasses = [
+  ClassModel(
+    subject: 'Object-oriented System Analysis and Design',
+    time: '6:15 PM - 7:30 PM',
+    day: 'Monday',
+    instructor: "Mario Pison Jr.",
+    icon: Icons.computer,
+  ),
+  ClassModel(
+    subject: 'Data Visualization',
+    time: '7:30 PM - 8:45 PM',
+    day: 'Monday',
+    instructor: "Maureen Mae Terminez",
+    icon: Icons.bar_chart,
+  ),
+  ClassModel(
+    subject: 'Mobile Development Fundamentals',
+    time: '8:45 PM - 10:00 PM',
+    day: 'Monday',
+    instructor: "Armando Sta. Cruz III",
+    icon: Icons.phone_android,
+  ),
+  ClassModel(
+    subject: 'Web Systems and Technology',
+    time: '6:15 PM - 7:30 PM',
+    day: 'Tuesday',
+    instructor: "Aldwin Nunag",
+    icon: Icons.web,
+  ),
+  ClassModel(
+    subject: 'Social and Professional Issues',
+    time: '7:30 PM - 8:45 PM',
+    day: 'Tuesday',
+    instructor: "John Ray Hernani",
+    icon: Icons.people,
+  ),
+  ClassModel(
+    subject: 'Object-oriented System Analysis and Design',
+    time: '6:15 PM - 7:30 PM',
+    day: 'Wednesday',
+    instructor: "Mario Pison Jr.",
+    icon: Icons.computer,
+  ),
+  ClassModel(
+    subject: 'Data Visualization',
+    time: '7:30 PM - 8:45 PM',
+    day: 'Wednesday',
+    instructor: "Maureen Mae Terminez",
+    icon: Icons.bar_chart,
+  ),
+  ClassModel(
+    subject: 'Mobile Development Fundamentals',
+    time: '8:45 PM - 10:00 PM',
+    day: 'Wednesday',
+    instructor: "Armando Sta. Cruz III",
+    icon: Icons.phone_android,
+  ),
+  ClassModel(
+    subject: 'Web Systems and Technology',
+    time: '6:15 PM - 7:30 PM',
+    day: 'Thursday',
+    instructor: "Aldwin Nunag",
+    icon: Icons.web,
+  ),
+  ClassModel(
+    subject: 'Social and Professional Issues',
+    time: '7:30 PM - 8:45 PM',
+    day: 'Thursday',
+    instructor: "John Ray Hernani",
+    icon: Icons.people,
+  ),
+  ClassModel(
+    subject: 'Object-oriented System Analysis and Design',
+    time: '6:15 PM - 7:30 PM',
+    day: 'Friday',
+    instructor: "Mario Pison Jr.",
+    icon: Icons.computer,
+  ),
+  ClassModel(
+    subject: 'Data Visualization',
+    time: '7:30 PM - 8:45 PM',
+    day: 'Friday',
+    instructor: "Maureen Mae Terminez",
+    icon: Icons.bar_chart,
+  ),
+  ClassModel(
+    subject: 'Mobile Development Fundamentals',
+    time: '8:45 PM - 10:00 PM',
+    day: 'Friday',
+    instructor: "Armando Sta. Cruz III",
+    icon: Icons.phone_android,
+  ),
+  ClassModel(
+    subject: 'Web Systems and Technology',
+    time: '6:15 PM - 7:30 PM',
+    day: 'Saturday',
+    instructor: "Aldwin Nunag",
+    icon: Icons.web,
+  ),
+];

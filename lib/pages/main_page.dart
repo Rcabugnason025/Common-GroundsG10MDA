@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:commongrounds/pages/dashboard_page.dart';
-import 'package:commongrounds/pages/learning_hub_page.dart';
+import 'package:commongrounds/pages/tasks_page.dart';
 import 'package:commongrounds/pages/calendar_page.dart';
 import 'package:commongrounds/pages/focus_mode_page.dart';
 import 'package:commongrounds/pages/wasi_page.dart';
@@ -19,14 +19,18 @@ class _MainPageState extends State<MainPage> {
 
   final List<String> _pageTitles = [
     "Dashboard",
-    "Learning Hub",
-    "Focus Mode"
+    "Tasks",
+    "Calendar",
+    "Focus Mode",
+    "Wasi AI"
   ];
 
   final List<Widget> _pages = const [
     DashboardPage(),
-    LearningHubPage(),
+    TasksPage(),
+    CalendarPage(),
     FocusModePage(),
+    WasiPage(),
   ];
 
   void _onNavTap(int index) {
