@@ -324,11 +324,32 @@ class _DashboardPageState extends State<DashboardPage> {
         borderRadius: BorderRadius.circular(16),
       ),
       child: InkWell(
-        onTap: () {
-          // Navigation logic here if needed, or simple snackbar for demo
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text("Opened $label")));
+        onTap: () async {
+          if (label == "Add Task") {
+            final DateTime? picked = await showDatePicker(
+              context: context,
+              initialDate: DateTime.now(),
+              firstDate: DateTime(2020),
+              lastDate: DateTime(2030),
+            );
+            if (picked != null) {
+              // Check if widget is still in the tree
+              if (!mounted) return;
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    "Selected Date: ${DateFormat('yyyy-MM-dd').format(picked)}",
+                  ),
+                ),
+              );
+            }
+          } else {
+            // Navigation logic here if needed, or simple snackbar for demo
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text("Opened $label")));
+          }
         },
         borderRadius: BorderRadius.circular(16),
         child: Column(

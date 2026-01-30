@@ -16,6 +16,8 @@ class _TasksPageState extends State<TasksPage> {
     String subject = task?.subject ?? '';
     String priority = task?.priority ?? 'Medium Priority';
     String status = task?.status ?? 'Not Started';
+    DateTime deadline =
+        task?.deadline ?? DateTime.now().add(const Duration(days: 7));
 
     showDialog(
       context: context,
@@ -39,6 +41,32 @@ class _TasksPageState extends State<TasksPage> {
                       initialValue: subject,
                       decoration: const InputDecoration(labelText: 'Subject'),
                       onChanged: (value) => subject = value,
+                    ),
+                    const SizedBox(height: 16),
+                    // Date Picker Row
+                    Row(
+                      children: [
+                        const Text("Due Date: "),
+                        TextButton(
+                          onPressed: () async {
+                            final DateTime? picked = await showDatePicker(
+                              context: context,
+                              initialDate: deadline,
+                              firstDate: DateTime(2020),
+                              lastDate: DateTime(2030),
+                            );
+                            if (picked != null) {
+                              setStateDialog(() {
+                                deadline = picked;
+                              });
+                            }
+                          },
+                          child: Text(
+                            "${deadline.year}-${deadline.month}-${deadline.day}",
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
@@ -153,6 +181,9 @@ class _TasksPageState extends State<TasksPage> {
                     setState(() {
                       mockDetailedTasks[index] = task.copyWith(status: status);
                     });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Status updated to $status')),
+                    );
                     Navigator.pop(context);
                   },
                 ),
@@ -275,7 +306,8 @@ class _TasksPageState extends State<TasksPage> {
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: colorScheme.surfaceContainerHighest,
+                                      color:
+                                          colorScheme.surfaceContainerHighest,
                                       borderRadius: BorderRadius.circular(999),
                                     ),
                                     child: Row(
@@ -304,7 +336,8 @@ class _TasksPageState extends State<TasksPage> {
                             const SizedBox(height: 8),
                             LinearProgressIndicator(
                               value: task.progress,
-                              backgroundColor: colorScheme.surfaceContainerHighest,
+                              backgroundColor:
+                                  colorScheme.surfaceContainerHighest,
                             ),
                           ],
                         ),
