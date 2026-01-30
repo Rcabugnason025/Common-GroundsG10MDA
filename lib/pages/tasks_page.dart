@@ -276,7 +276,9 @@ class _TasksPageState extends State<TasksPage> {
                               ),
                             ),
                             const SizedBox(height: 6),
-                            Row(
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 4,
                               children: [
                                 Container(
                                   padding: const EdgeInsets.symmetric(
@@ -297,7 +299,6 @@ class _TasksPageState extends State<TasksPage> {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 8),
                                 GestureDetector(
                                   onTap: () => _showStatusPicker(task, index),
                                   child: Container(

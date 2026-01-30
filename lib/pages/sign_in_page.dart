@@ -20,6 +20,9 @@ class _SignInPageState extends State<SignInPage>
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
 
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
   VoidCallback? get onPressed => null;
 
   @override
@@ -51,6 +54,8 @@ class _SignInPageState extends State<SignInPage>
   @override
   void dispose() {
     _animationController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
