@@ -14,10 +14,14 @@ class SignInPage extends StatefulWidget {
   State<SignInPage> createState() => _SignInPageState();
 }
 
-class _SignInPageState extends State<SignInPage> with SingleTickerProviderStateMixin {
+class _SignInPageState extends State<SignInPage>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
+
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   VoidCallback? get onPressed => null;
 
@@ -50,6 +54,8 @@ class _SignInPageState extends State<SignInPage> with SingleTickerProviderStateM
   @override
   void dispose() {
     _animationController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -57,9 +63,8 @@ class _SignInPageState extends State<SignInPage> with SingleTickerProviderStateM
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
-        const SignUpPage(),
-        transitionsBuilder:
-            (context, animation, secondaryAnimation, child) {
+            const SignUpPage(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
         transitionDuration: const Duration(milliseconds: 500),
@@ -68,19 +73,38 @@ class _SignInPageState extends State<SignInPage> with SingleTickerProviderStateM
   }
 
   void _goToMainPage() {
+    // Simple validation
+    if (_emailController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Email is required!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password is required!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
-        const MainPage(),
-        transitionsBuilder:
-            (context, animation, secondaryAnimation, child) {
+            const MainPage(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
         transitionDuration: const Duration(milliseconds: 500),
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -161,10 +185,7 @@ class _SignInPageState extends State<SignInPage> with SingleTickerProviderStateM
                               ),
                             ),
                           ),
-                          Text(
-                            'Welcome Back!',
-                            style: AppTypography.heading1,
-                          ),
+                          Text('Welcome Back!', style: AppTypography.heading1),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 40),
                             child: Text(
@@ -191,7 +212,8 @@ class _SignInPageState extends State<SignInPage> with SingleTickerProviderStateM
                             child: SizedBox(
                               width: 350,
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   TextButton(
                                     onPressed: _goToSignUpPage,
@@ -224,7 +246,7 @@ class _SignInPageState extends State<SignInPage> with SingleTickerProviderStateM
                               text: 'Sign In',
                               onPressed: _goToMainPage,
                             ),
-                          )
+                          ),
                         ],
                       ),
                     ),

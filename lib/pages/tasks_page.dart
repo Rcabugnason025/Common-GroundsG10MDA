@@ -626,6 +626,59 @@ class _TasksPageState extends State<TasksPage> {
                           ),
                         ],
                       ),
+                    const SizedBox(height: 16),
+                    // Date Picker Row
+                    Row(
+                      children: [
+                        const Text("Due Date: "),
+                        TextButton(
+                          onPressed: () async {
+                            final DateTime? picked = await showDatePicker(
+                              context: context,
+                              initialDate: deadline,
+                              firstDate: DateTime(2020),
+                              lastDate: DateTime(2030),
+                            );
+                            if (picked != null) {
+                              setStateDialog(() {
+                                deadline = picked;
+                              });
+                            }
+                          },
+                          child: Text(
+                            "${deadline.year}-${deadline.month}-${deadline.day}",
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      initialValue: priority,
+                      decoration: const InputDecoration(labelText: 'Priority'),
+                      items:
+                          ['High Priority', 'Medium Priority', 'Low Priority']
+                              .map(
+                                (p) =>
+                                    DropdownMenuItem(value: p, child: Text(p)),
+                              )
+                              .toList(),
+                      onChanged: (value) =>
+                          setStateDialog(() => priority = value!),
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      initialValue: status,
+                      decoration: const InputDecoration(labelText: 'Status'),
+                      items:
+                          ['Not Started', 'In Progress', 'Completed', 'Overdue']
+                              .map(
+                                (s) =>
+                                    DropdownMenuItem(value: s, child: Text(s)),
+                              )
+                              .toList(),
+                      onChanged: (value) =>
+                          setStateDialog(() => status = value!),
                     ),
                   ],
                 ),
