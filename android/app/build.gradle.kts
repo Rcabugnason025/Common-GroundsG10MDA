@@ -19,7 +19,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.group13.commongrounds.commongrounds"
+        applicationId = "com.group10.commongrounds.commongrounds"
         minSdk = flutter.minSdkVersion
         targetSdk = 36
         versionCode = flutter.versionCode
