@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:commongrounds/theme/colors.dart';
 import 'package:intl/intl.dart';
 import 'package:commongrounds/data/mock_detailed_tasks.dart';
 import 'package:commongrounds/data/mock_classes.dart';
@@ -235,7 +236,25 @@ class _WasiPageState extends State<WasiPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Wasi AI'), centerTitle: true),
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        leading:
+            (ModalRoute.of(context)?.settings.arguments is Map &&
+                (ModalRoute.of(context)?.settings.arguments
+                        as Map)['showBackButton'] ==
+                    true)
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () => Navigator.pop(context),
+              )
+            : null,
+        title: const Text(
+          "Wasi AI",
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+      ),
       body: Column(
         children: [
           Expanded(

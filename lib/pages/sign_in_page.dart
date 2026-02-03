@@ -4,8 +4,6 @@ import 'package:commongrounds/theme/colors.dart';
 import 'package:commongrounds/theme/typography.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:commongrounds/widgets/starting_textfield.dart';
-import 'package:commongrounds/pages/sign_up_page.dart';
-import 'package:commongrounds/pages/main_page.dart';
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
@@ -22,8 +20,6 @@ class _SignInPageState extends State<SignInPage>
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
-  VoidCallback? get onPressed => null;
 
   @override
   void initState() {
@@ -60,48 +56,51 @@ class _SignInPageState extends State<SignInPage>
   }
 
   void _goToSignUpPage() {
-    Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            const SignUpPage(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
-        },
-        transitionDuration: const Duration(milliseconds: 500),
-      ),
-    );
+    Navigator.of(context).pushReplacementNamed('/signUp');
   }
 
   void _goToMainPage() {
-    // Simple validation
-    if (_emailController.text.isEmpty) {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    final emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,}$');
+    
+    if (email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Email is required!'),
-          backgroundColor: Colors.red,
-        ),
+        const SnackBar(content: Text('Email is required!'), backgroundColor: Colors.red),
       );
       return;
     }
-
-    if (_passwordController.text.isEmpty) {
+    if (!emailRegex.hasMatch(email)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Password is required!'),
-          backgroundColor: Colors.red,
-        ),
+        const SnackBar(content: Text('Enter a valid email address!'), backgroundColor: Colors.red),
       );
       return;
     }
+    if (password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password is required!'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+    if (password.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password must be at least 6 characters!'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Sign in successful!'), backgroundColor: Colors.green),
+    );
+    Future.delayed(const Duration(milliseconds: 800), () {
+      Navigator.of(context).pushReplacementNamed('/main');
+    });
+  }
 
-    Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            const MainPage(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
-        },
-        transitionDuration: const Duration(milliseconds: 500),
+  void _forgotPassword() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Forgot Password clicked!"),
+        backgroundColor: Colors.blue,
       ),
     );
   }
@@ -174,10 +173,10 @@ class _SignInPageState extends State<SignInPage>
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          SizedBox(
+                          const SizedBox(
                             width: 80,
                             height: 80,
-                            child: const Center(
+                            child: Center(
                               child: Icon(
                                 Symbols.owl,
                                 size: 80,
@@ -195,18 +194,23 @@ class _SignInPageState extends State<SignInPage>
                             ),
                           ),
                           const SizedBox(height: 30),
+
                           CustomTextField(
                             label: 'Email',
                             prefixIcon: Icons.email,
+                            controller: _emailController,
                             width: 350,
                           ),
                           CustomTextField(
                             label: 'Password',
                             prefixIcon: Icons.lock,
                             obscureText: true,
+                            controller: _passwordController,
                             width: 350,
                           ),
+
                           const SizedBox(height: 10),
+
                           FadeTransition(
                             opacity: _fadeAnimation,
                             child: SizedBox(
@@ -226,7 +230,7 @@ class _SignInPageState extends State<SignInPage>
                                     ),
                                   ),
                                   TextButton(
-                                    onPressed: onPressed,
+                                    onPressed: _forgotPassword,
                                     child: Text(
                                       "Forgot Password?",
                                       style: AppTypography.button.copyWith(
@@ -239,7 +243,9 @@ class _SignInPageState extends State<SignInPage>
                               ),
                             ),
                           ),
+
                           const SizedBox(height: 20),
+
                           FadeTransition(
                             opacity: _fadeAnimation,
                             child: CustomButton(
@@ -260,3 +266,4 @@ class _SignInPageState extends State<SignInPage>
     );
   }
 }
+

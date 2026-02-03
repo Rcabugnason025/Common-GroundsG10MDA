@@ -5,6 +5,8 @@ import 'package:commongrounds/data/mock_classes.dart';
 import 'package:commongrounds/data/user_data.dart';
 import 'package:commongrounds/pages/profile_page.dart';
 import 'package:commongrounds/model/detailed_task.dart';
+import 'package:commongrounds/widgets/task_edit_dialog.dart';
+import 'package:commongrounds/pages/task_list_page.dart';
 import 'package:intl/intl.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -71,9 +73,9 @@ class _DashboardPageState extends State<DashboardPage> {
                       const SizedBox(height: 4),
                       Text(
                         dateStr,
-                        style: Theme.of(
-                          context,
-                        ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: Colors.grey[600],
+                        ),
                       ),
                     ],
                   ),
@@ -313,6 +315,20 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+  void _showAddTaskDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black54,
+      builder: (context) => TaskEditDialog(
+        onSave: (newTask) {
+          setState(() {
+            mockDetailedTasks.insert(0, newTask);
+          });
+        },
+      ),
+    );
+  }
+
   Widget _buildQuickAction(
     BuildContext context,
     IconData icon,
@@ -326,28 +342,28 @@ class _DashboardPageState extends State<DashboardPage> {
         borderRadius: BorderRadius.circular(16),
       ),
       child: InkWell(
-        onTap: () async {
+        onTap: () {
           if (label == "Add Task") {
-            final DateTime? picked = await showDatePicker(
-              context: context,
-              initialDate: DateTime.now(),
-              firstDate: DateTime(2020),
-              lastDate: DateTime(2030),
+            _showAddTaskDialog(context);
+          } else if (label == "Focus") {
+            Navigator.pushNamed(
+              context,
+              '/focus',
+              arguments: {'showBackButton': true},
             );
-            if (picked != null) {
-              // Check if widget is still in the tree
-              if (!mounted) return;
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    "Selected Date: ${DateFormat('yyyy-MM-dd').format(picked)}",
-                  ),
-                ),
-              );
-            }
+          } else if (label == "Chat AI") {
+            Navigator.pushNamed(
+              context,
+              '/wasi',
+              arguments: {'showBackButton': true},
+            );
+          } else if (label == "Calendar") {
+            Navigator.pushNamed(
+              context,
+              '/calendar',
+              arguments: {'showBackButton': true},
+            );
           } else {
-            // Navigation logic here if needed, or simple snackbar for demo
             ScaffoldMessenger.of(
               context,
             ).showSnackBar(SnackBar(content: Text("Opened $label")));
@@ -380,38 +396,69 @@ class _DashboardPageState extends State<DashboardPage> {
     IconData icon,
     Color color,
   ) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Icon(icon, color: color, size: 28),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+    return InkWell(
+      onTap: () {
+        if (title == 'Pending Tasks') {
+          final pending = mockDetailedTasks
+              .where((t) => t.status != 'Completed')
+              .toList();
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  TaskListPage(title: 'Pending Tasks', tasks: pending),
+            ),
+          );
+        } else if (title == 'Completed') {
+          final completed = mockDetailedTasks
+              .where((t) => t.status == 'Completed')
+              .toList();
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  TaskListPage(title: 'Completed Tasks', tasks: completed),
+            ),
+          );
+        }
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Icon(icon, color: color, size: 28),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(title, style: TextStyle(color: Colors.grey[600], fontSize: 14)),
-        ],
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -4,7 +4,6 @@ import 'package:commongrounds/theme/colors.dart';
 import 'package:commongrounds/theme/typography.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:commongrounds/widgets/starting_textfield.dart';
-import 'package:commongrounds/pages/main_page.dart' as mainpage;
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -13,10 +12,17 @@ class SignUpPage extends StatefulWidget {
   State<SignUpPage> createState() => _SignUpPageState();
 }
 
-class _SignUpPageState extends State<SignUpPage> with SingleTickerProviderStateMixin {
+class _SignUpPageState extends State<SignUpPage>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
+
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   @override
   void initState() {
@@ -47,29 +53,102 @@ class _SignUpPageState extends State<SignUpPage> with SingleTickerProviderStateM
   @override
   void dispose() {
     _animationController.dispose();
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
   void _goToMainPage() {
-    Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-        const mainpage.MainPage(),
-        transitionsBuilder:
-            (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
-        },
-        transitionDuration: const Duration(milliseconds: 500),
+    if (_nameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Name is required!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_emailController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Email is required!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password is required!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_confirmPasswordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please confirm your password!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_passwordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Passwords do not match!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Sign up successful!'),
+        backgroundColor: Colors.green,
       ),
     );
+
+    Future.delayed(const Duration(milliseconds: 800), () {
+      Navigator.of(context).pushReplacementNamed('/main');
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+
+      // AppBar with back button (WORKING)
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          onPressed: () {
+            // Real back behavior
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              // fallback (in case it was opened directly)
+              Navigator.pushReplacementNamed(context, '/signIn');
+            }
+          },
+        ),
+      ),
+
       body: Stack(
         children: [
+          // Background circles
           Positioned(
             top: -100,
             left: -50,
@@ -119,6 +198,7 @@ class _SignUpPageState extends State<SignUpPage> with SingleTickerProviderStateM
             ),
           ),
 
+          // Content
           Center(
             child: AnimatedBuilder(
               animation: _animationController,
@@ -128,61 +208,61 @@ class _SignUpPageState extends State<SignUpPage> with SingleTickerProviderStateM
                   child: ScaleTransition(
                     scale: _scaleAnimation,
                     child: Transform.translate(
-                      offset: const Offset(0, -60),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: 80,
-                            height: 80,
-                            child: const Center(
-                              child: Icon(
-                                Symbols.owl,
-                                size: 80,
-                                color: Color(0xFF0D47A1),
-                              ),
+                      offset: const Offset(0, -30),
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 10),
+                            const Icon(
+                              Symbols.owl,
+                              size: 80,
+                              color: Color(0xFF0D47A1),
                             ),
-                          ),
-                          Text(
-                            'Welcome Back!',
-                            style: AppTypography.heading1,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 40),
-                            child: Text(
+                            const SizedBox(height: 10),
+                            Text('Create Account', style: AppTypography.heading1),
+                            const SizedBox(height: 6),
+                            Text(
                               'Focus. Plan. Achieve',
                               textAlign: TextAlign.center,
                               style: AppTypography.heading2,
                             ),
-                          ),
-                          const SizedBox(height: 30),
-                          CustomTextField(
-                            label: 'Enter your full name',
-                            width: 350,
-                          ),
-                          CustomTextField(
-                            label: 'Enter your email',
-                            width: 350,
-                          ),
-                          CustomTextField(
-                            label: 'Enter password',
-                            obscureText: true,
-                            width: 350,
-                          ),
-                          CustomTextField(
-                            label: 'Confirm password',
-                            obscureText: true,
-                            width: 350,
-                          ),
-                          const SizedBox(height: 20),
-                          FadeTransition(
-                            opacity: _fadeAnimation,
-                            child: CustomButton(
-                              text: 'Sign Up',
-                              onPressed: _goToMainPage,
+                            const SizedBox(height: 30),
+
+                            CustomTextField(
+                              label: 'Enter your full name',
+                              controller: _nameController,
+                              width: 350,
                             ),
-                          )
-                        ],
+                            CustomTextField(
+                              label: 'Enter your email',
+                              controller: _emailController,
+                              width: 350,
+                            ),
+                            CustomTextField(
+                              label: 'Enter password',
+                              obscureText: true,
+                              controller: _passwordController,
+                              width: 350,
+                            ),
+                            CustomTextField(
+                              label: 'Confirm password',
+                              obscureText: true,
+                              controller: _confirmPasswordController,
+                              width: 350,
+                            ),
+
+                            const SizedBox(height: 20),
+                            FadeTransition(
+                              opacity: _fadeAnimation,
+                              child: CustomButton(
+                                text: 'Sign Up',
+                                onPressed: _goToMainPage,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
