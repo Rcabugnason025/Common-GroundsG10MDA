@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:commongrounds/pages/dashboard_page.dart';
 import 'package:commongrounds/pages/tasks_page.dart';
 import 'package:commongrounds/pages/calendar_page.dart';
 import 'package:commongrounds/pages/focus_mode_page.dart';
 import 'package:commongrounds/pages/wasi_page.dart';
+import 'package:commongrounds/pages/sign_in_page.dart';
 import 'package:commongrounds/widgets/top_navbar.dart';
 import 'package:commongrounds/widgets/bottom_navbar.dart';
 
@@ -34,9 +37,29 @@ class _MainPageState extends State<MainPage> {
   ];
 
   void _onNavTap(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
+    setState(() => _currentIndex = index);
+  }
+
+  // ✅ LOGOUT FUNCTION
+  Future<void> _logout() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+
+      if (!mounted) return;
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const SignInPage()),
+        (route) => false, // removes all previous routes
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to log out. Please try again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -45,9 +68,12 @@ class _MainPageState extends State<MainPage> {
       appBar: TopNavbar(
         pageTitle: _pageTitles[_currentIndex],
         onProfileTap: () {
+          // optional: go to profile page
         },
         onNotificationTap: () {
+          // optional: go to notifications
         },
+        onLogoutTap: _logout, // ✅ CONNECT LOGOUT
       ),
       body: _pages[_currentIndex],
       bottomNavigationBar: BottomNavbar(

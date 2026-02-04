@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:commongrounds/theme/colors.dart';
 import 'package:commongrounds/theme/typography.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class TopNavbar extends StatelessWidget implements PreferredSizeWidget {
   final String pageTitle;
   final VoidCallback? onProfileTap;
   final VoidCallback? onNotificationTap;
+  final VoidCallback? onLogoutTap;
 
   const TopNavbar({
     super.key,
     required this.pageTitle,
     this.onProfileTap,
     this.onNotificationTap,
+    this.onLogoutTap,
   });
 
   @override
@@ -34,6 +37,11 @@ class TopNavbar extends StatelessWidget implements PreferredSizeWidget {
           icon: const Icon(Icons.person_outlined, color: AppColors.icon),
           onPressed: onProfileTap,
         ),
+        IconButton(
+        tooltip: "Logout",
+        icon: const Icon(Icons.logout, color: AppColors.icon),
+        onPressed: onLogoutTap,
+      ),
       ],
     );
   }

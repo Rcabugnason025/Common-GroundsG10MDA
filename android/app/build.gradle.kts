@@ -2,10 +2,12 @@ plugins {
     id("com.android.application")
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
+    id("com.google.gms.google-services")
+
 }
 
 android {
-    namespace = "com.group13.commongrounds.commongrounds"
+    namespace = "com.group10.commongrounds.commongrounds"
     compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
@@ -31,6 +33,13 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+    
+    dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:34.8.0"))
+
+    // https://firebase.google.com/docs/android/setup#available-libraries
+    
+}
 }
 
 flutter {
