@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
+import 'package:commongrounds/services/auth_service.dart';
 
 import 'package:commongrounds/pages/dashboard_page.dart';
 import 'package:commongrounds/pages/tasks_page.dart';
@@ -43,7 +43,7 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> _logout() async {
     try {
-      await FirebaseAuth.instance.signOut();
+      await AuthService().signOut();
       if (!mounted) return;
 
       Navigator.pushAndRemoveUntil(
