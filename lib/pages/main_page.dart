@@ -6,7 +6,12 @@ import 'package:commongrounds/pages/tasks_page.dart';
 import 'package:commongrounds/pages/calendar_page.dart';
 import 'package:commongrounds/pages/focus_mode_page.dart';
 import 'package:commongrounds/pages/wasi_page.dart';
+<<<<<<< HEAD
 import 'package:commongrounds/pages/sign_in_page.dart';
+=======
+import 'package:commongrounds/pages/notifications_page.dart';
+import 'package:commongrounds/pages/profile_page.dart';
+>>>>>>> 4790bed27e8d1139bd4fa88cf9334766b96fd798
 import 'package:commongrounds/widgets/top_navbar.dart';
 import 'package:commongrounds/widgets/bottom_navbar.dart';
 
@@ -25,7 +30,7 @@ class _MainPageState extends State<MainPage> {
     "Tasks",
     "Calendar",
     "Focus Mode",
-    "Wasi AI"
+    "Wasi AI",
   ];
 
   final List<Widget> _pages = const [
@@ -68,10 +73,25 @@ class _MainPageState extends State<MainPage> {
       appBar: TopNavbar(
         pageTitle: _pageTitles[_currentIndex],
         onProfileTap: () {
+<<<<<<< HEAD
           // optional: go to profile page
         },
         onNotificationTap: () {
           // optional: go to notifications
+=======
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ProfilePage()),
+          ).then(
+            (_) => setState(() {}),
+          ); // Refresh to update profile icon if changed
+        },
+        onNotificationTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const NotificationsPage()),
+          );
+>>>>>>> 4790bed27e8d1139bd4fa88cf9334766b96fd798
         },
         onLogoutTap: _logout, // ✅ CONNECT LOGOUT
       ),
