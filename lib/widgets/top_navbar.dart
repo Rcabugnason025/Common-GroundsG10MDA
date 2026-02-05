@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:commongrounds/theme/colors.dart';
 import 'package:commongrounds/theme/typography.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class TopNavbar extends StatelessWidget implements PreferredSizeWidget {
   final String pageTitle;
