@@ -7,8 +7,11 @@ import 'pages/main_page.dart';
 import 'package:commongrounds/pages/focus_mode_page.dart';
 import 'package:commongrounds/pages/wasi_page.dart';
 import 'package:commongrounds/pages/calendar_page.dart';
+import 'package:commongrounds/services/auth_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await AuthService().init();
   runApp(const MyApp());
 }
 

@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:commongrounds/pages/sign_in_page.dart';
 import 'package:commongrounds/pages/dashboard_page.dart';
 import 'package:commongrounds/pages/main_page.dart';
-import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 void main() {
   testWidgets('App smoke test - Verify Sign In Page renders', (

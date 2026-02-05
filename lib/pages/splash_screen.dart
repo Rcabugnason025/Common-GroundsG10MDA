@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'sign_in_page.dart';
+import 'package:commongrounds/services/auth_service.dart';
 import 'package:commongrounds/theme/colors.dart';
 import 'package:commongrounds/theme/typography.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
@@ -12,7 +12,8 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
@@ -49,8 +50,13 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     super.dispose();
   }
 
-  void _goToSignInPage() {
-    Navigator.of(context).pushReplacementNamed('/signIn');
+  Future<void> _goToSignInPage() async {
+    final isLoggedIn = await AuthService().isLoggedIn;
+    if (isLoggedIn) {
+      Navigator.of(context).pushReplacementNamed('/main');
+    } else {
+      Navigator.of(context).pushReplacementNamed('/signIn');
+    }
   }
 
   @override
@@ -130,10 +136,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                             ),
                           ),
                         ),
-                        Text(
-                          'CommonGrounds',
-                          style: AppTypography.heading1,
-                        ),
+                        Text('CommonGrounds', style: AppTypography.heading1),
                         const SizedBox(height: 10),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -150,7 +153,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                             text: 'Get Started',
                             onPressed: _goToSignInPage,
                           ),
-                        )
+                        ),
                       ],
                     ),
                   ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:commongrounds/data/user_data.dart';
+import 'package:commongrounds/services/auth_service.dart';
 import 'package:commongrounds/theme/colors.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -13,6 +14,7 @@ class _ProfilePageState extends State<ProfilePage> {
   late TextEditingController _nameController;
   late TextEditingController _emailController;
   late TextEditingController _bioController;
+  late TextEditingController _courseController;
 
   @override
   void initState() {
@@ -20,6 +22,7 @@ class _ProfilePageState extends State<ProfilePage> {
     _nameController = TextEditingController(text: UserData.name);
     _emailController = TextEditingController(text: UserData.email);
     _bioController = TextEditingController(text: UserData.bio);
+    _courseController = TextEditingController(text: UserData.course);
   }
 
   @override
@@ -27,19 +30,30 @@ class _ProfilePageState extends State<ProfilePage> {
     _nameController.dispose();
     _emailController.dispose();
     _bioController.dispose();
+    _courseController.dispose();
     super.dispose();
   }
 
-  void _saveProfile() {
+  Future<void> _saveProfile() async {
+    await AuthService().updateProfile(
+      name: _nameController.text,
+      bio: _bioController.text,
+      course: _courseController.text,
+    );
+
     setState(() {
-      UserData.name = _nameController.text;
-      UserData.email = _emailController.text;
-      UserData.bio = _bioController.text;
+      // UserData is updated by AuthService
     });
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Profile updated successfully!')),
     );
     Navigator.pop(context, true); // Return true to indicate changes
+  }
+
+  Future<void> _logout() async {
+    await AuthService().signOut();
+    Navigator.of(context).pushNamedAndRemoveUntil('/signIn', (route) => false);
   }
 
   @override
@@ -112,9 +126,20 @@ class _ProfilePageState extends State<ProfilePage> {
             const SizedBox(height: 20),
             TextField(
               controller: _emailController,
+              readOnly: true,
               decoration: const InputDecoration(
                 labelText: 'Email',
                 prefixIcon: Icon(Icons.email),
+                border: OutlineInputBorder(),
+                helperText: 'Email cannot be changed',
+              ),
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: _courseController,
+              decoration: const InputDecoration(
+                labelText: 'Course / Year',
+                prefixIcon: Icon(Icons.school),
                 border: OutlineInputBorder(),
               ),
             ),
@@ -143,6 +168,25 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 child: const Text(
                   'Save Changes',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: OutlinedButton(
+                onPressed: _logout,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.red,
+                  side: const BorderSide(color: Colors.red),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Log Out',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:commongrounds/services/auth_service.dart';
 import 'package:commongrounds/widgets/starting_button.dart';
 import 'package:commongrounds/theme/colors.dart';
 import 'package:commongrounds/theme/typography.dart';
@@ -59,41 +60,69 @@ class _SignInPageState extends State<SignInPage>
     Navigator.of(context).pushReplacementNamed('/signUp');
   }
 
-  void _goToMainPage() {
+  Future<void> _goToMainPage() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
     final emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,}$');
-    
+
     if (email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Email is required!'), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text('Email is required!'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
     if (!emailRegex.hasMatch(email)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter a valid email address!'), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text('Enter a valid email address!'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
     if (password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password is required!'), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text('Password is required!'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
     if (password.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password must be at least 6 characters!'), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text('Password must be at least 6 characters!'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Sign in successful!'), backgroundColor: Colors.green),
-    );
-    Future.delayed(const Duration(milliseconds: 800), () {
-      Navigator.of(context).pushReplacementNamed('/main');
-    });
+
+    // Call AuthService
+    final success = await AuthService().signIn(email, password);
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sign in successful!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Future.delayed(const Duration(milliseconds: 800), () {
+        Navigator.of(context).pushReplacementNamed('/main');
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Invalid email or password!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _forgotPassword() {
@@ -266,4 +295,3 @@ class _SignInPageState extends State<SignInPage>
     );
   }
 }
-

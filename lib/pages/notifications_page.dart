@@ -13,16 +13,7 @@ class NotificationsPage extends StatelessWidget {
 
     // Filter tasks due today
     final dueTodayTasks = mockDetailedTasks.where((task) {
-      // Assuming task.dueDate is comparable or we can parse it.
-      // Based on previous context, task.dueDate might be a DateTime or String.
-      // Let's check detailed_task.dart or assume standard format.
-      // If it's a DateTime, we compare parts.
-      // If it's a String, we might need parsing.
-      // Let's assume it's a DateTime for now or check the model.
-      // Re-checking mock_detailed_tasks.dart would be safer, but I'll write defensive code.
-      if (task.dueDate == null) return false;
-
-      final taskDate = task.dueDate!;
+      final taskDate = task.deadline;
       return taskDate.year == today.year &&
           taskDate.month == today.month &&
           taskDate.day == today.day;
@@ -67,7 +58,7 @@ class NotificationsPage extends StatelessWidget {
                 context,
                 title: 'Task Due: ${task.title}',
                 message:
-                    'Priority: ${task.priority} • ${DateFormat('h:mm a').format(task.dueDate!)}',
+                    'Priority: ${task.priority} • ${DateFormat('h:mm a').format(task.deadline)}',
                 icon: Icons.calendar_today,
                 color: Colors.orange,
                 time: 'Today',

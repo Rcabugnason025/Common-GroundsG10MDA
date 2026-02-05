@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:commongrounds/services/auth_service.dart';
 import 'package:commongrounds/widgets/starting_button.dart';
 import 'package:commongrounds/theme/colors.dart';
 import 'package:commongrounds/theme/typography.dart';
@@ -20,6 +21,7 @@ class _SignUpPageState extends State<SignUpPage>
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _courseController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
@@ -55,12 +57,13 @@ class _SignUpPageState extends State<SignUpPage>
     _animationController.dispose();
     _nameController.dispose();
     _emailController.dispose();
+    _courseController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  void _goToMainPage() {
+  Future<void> _goToMainPage() async {
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -111,16 +114,35 @@ class _SignUpPageState extends State<SignUpPage>
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Sign up successful!'),
-        backgroundColor: Colors.green,
-      ),
+    // Call AuthService
+    final success = await AuthService().signUp(
+      name: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+      course: _courseController.text.trim().isNotEmpty
+          ? _courseController.text.trim()
+          : "BS Computer Science",
     );
 
-    Future.delayed(const Duration(milliseconds: 800), () {
-      Navigator.of(context).pushReplacementNamed('/main');
-    });
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sign up successful!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      Future.delayed(const Duration(milliseconds: 800), () {
+        Navigator.of(context).pushReplacementNamed('/main');
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Email already exists!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -221,7 +243,10 @@ class _SignUpPageState extends State<SignUpPage>
                               color: Color(0xFF0D47A1),
                             ),
                             const SizedBox(height: 10),
-                            Text('Create Account', style: AppTypography.heading1),
+                            Text(
+                              'Create Account',
+                              style: AppTypography.heading1,
+                            ),
                             const SizedBox(height: 6),
                             Text(
                               'Focus. Plan. Achieve',
@@ -238,6 +263,11 @@ class _SignUpPageState extends State<SignUpPage>
                             CustomTextField(
                               label: 'Enter your email',
                               controller: _emailController,
+                              width: 350,
+                            ),
+                            CustomTextField(
+                              label: 'Course / Year (e.g. BSCS - 2nd Year)',
+                              controller: _courseController,
                               width: 350,
                             ),
                             CustomTextField(

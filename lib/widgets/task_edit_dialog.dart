@@ -304,7 +304,7 @@ categoryOptions = categoryOptions.toSet().toList();
 
                     // Priority Dropdown
                     DropdownButtonFormField<String>(
-                      value: ['High Priority', 'Medium Priority', 'Low Priority'].contains(priority) ? priority : 'Medium Priority',
+                      initialValue: ['High Priority', 'Medium Priority', 'Low Priority'].contains(priority) ? priority : 'Medium Priority',
                       decoration: InputDecoration(
                         labelText: 'Priority',
                         prefixIcon: const Icon(Icons.flag),
@@ -334,7 +334,7 @@ categoryOptions = categoryOptions.toSet().toList();
 
                     // Status Dropdown
                     DropdownButtonFormField<String>(
-                      value: ['Not Started', 'In Progress', 'Completed', 'Overdue'].contains(status) ? status : 'Not Started',
+                      initialValue: ['Not Started', 'In Progress', 'Completed', 'Overdue'].contains(status) ? status : 'Not Started',
                       decoration: InputDecoration(
                         labelText: 'Status',
                         prefixIcon: const Icon(Icons.info_outline),
@@ -419,7 +419,7 @@ categoryOptions = categoryOptions.toSet().toList();
                               ],
                             )
                           : DropdownButtonFormField<String>(
-                              value: category,
+                              initialValue: category,
                               decoration: InputDecoration(
                                 labelText: 'Category',
                                 prefixIcon: const Icon(Icons.category),

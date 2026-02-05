@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:commongrounds/theme/colors.dart';
-import 'package:commongrounds/theme/colors.dart';
 import 'package:intl/intl.dart';
 
 class FocusModePage extends StatefulWidget {
