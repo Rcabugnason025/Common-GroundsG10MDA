@@ -37,6 +37,8 @@ To run this project locally, ensure you have [Flutter](https://flutter.dev/docs/
 
 You can run the app on an emulator (Android/iOS) or in your web browser.
 
+**Note:** This project uses local storage (`shared_preferences`) for data persistence. No external database setup is required.
+
 **Run on Android/iOS Emulator:**
 ```bash
 flutter run
