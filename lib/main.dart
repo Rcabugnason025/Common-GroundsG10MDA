@@ -14,23 +14,11 @@ import 'package:commongrounds/services/auth_service.dart';
 import 'package:commongrounds/pages/profile_page.dart';
 import 'package:commongrounds/pages/notifications_page.dart';
 
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Local Auth
   await AuthService().init();
-
-  // Initialize Firebase (try-catch to avoid crash if not configured)
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-  } catch (e) {
-    print("Firebase init failed (expected if not using Firebase yet): $e");
-  }
 
   // Allow screen rotation (portrait + landscape)
   await SystemChrome.setPreferredOrientations([

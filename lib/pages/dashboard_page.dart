@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:commongrounds/theme/colors.dart';
 import 'package:commongrounds/data/mock_detailed_tasks.dart';
 import 'package:commongrounds/data/mock_classes.dart';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:commongrounds/data/user_data.dart'; // Import UserData
 
 import 'package:commongrounds/model/detailed_task.dart';
 import 'package:commongrounds/widgets/task_edit_dialog.dart';
@@ -42,7 +40,11 @@ class _DashboardPageState extends State<DashboardPage> {
         .where((t) => t.priority.contains('High') && t.status != 'Completed')
         .toList();
 
-    final user = FirebaseAuth.instance.currentUser;
+    // Use local UserData instead of Firebase
+    String firstName = 'Student';
+    if (UserData.name.isNotEmpty) {
+      firstName = UserData.name.trim().split(' ').first;
+    }
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -51,45 +53,16 @@ class _DashboardPageState extends State<DashboardPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ✅ Greeting + date (Firestore name)
-            if (user == null)
-              Text(
-                '$greeting, Student',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-              )
-            else
-              StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                stream: FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(user.uid)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  String firstName = 'Student';
-
-                  final data = snapshot.data?.data();
-                  final fullName = (data?['fullName'] ?? '') as String;
-
-                  if (fullName.trim().isNotEmpty) {
-                    firstName = fullName.trim().split(' ').first;
-                  }
-
-                  return Text(
-                    '$greeting, $firstName',
-                    maxLines: 1, // ✅ keep on one line
-                    overflow: TextOverflow.ellipsis,
-                    style:
-                        Theme.of(context).textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
-                  );
-                },
-              ),
+            // Greeting
+            Text(
+              '$greeting, $firstName',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+            ),
 
             const SizedBox(height: 4),
 
