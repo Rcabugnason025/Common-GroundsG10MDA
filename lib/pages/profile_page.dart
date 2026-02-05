@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:commongrounds/data/user_data.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:commongrounds/theme/colors.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -10,63 +12,118 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  late TextEditingController _nameController;
-  late TextEditingController _emailController;
-  late TextEditingController _bioController;
+  final TextEditingController _bioController = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    _nameController = TextEditingController(text: UserData.name);
-    _emailController = TextEditingController(text: UserData.email);
-    _bioController = TextEditingController(text: UserData.bio);
-  }
+  bool _loadedOnce = false;
+  bool _saving = false;
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
     _bioController.dispose();
     super.dispose();
   }
 
-  void _saveProfile() {
-    setState(() {
-      UserData.name = _nameController.text;
-      UserData.email = _emailController.text;
-      UserData.bio = _bioController.text;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Profile updated successfully!')),
-    );
-    Navigator.pop(context, true); // Return true to indicate changes
+  Future<void> _saveBio(String uid) async {
+    setState(() => _saving = true);
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'bio': _bioController.text.trim(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Bio saved!')),
+      );
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to save bio.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Profile'),
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.textPrimary,
-      ),
-      backgroundColor: AppColors.background,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            Center(
-              child: Stack(
-                children: [
-                  CircleAvatar(
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      return const Scaffold(
+        body: Center(child: Text('Not logged in.')),
+      );
+    }
+
+    final uid = user.uid;
+
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Scaffold(
+            body: Center(child: Text('Error loading profile.')),
+          );
+        }
+
+        if (!snapshot.hasData) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final data = snapshot.data!.data();
+
+        // If the doc doesn't exist yet (just in case), create it using Auth email
+        if (data == null) {
+          FirebaseFirestore.instance.collection('users').doc(uid).set({
+            'fullName': user.displayName ?? '',
+            'email': user.email ?? '',
+            'bio': '',
+            'createdAt': FieldValue.serverTimestamp(),
+            'updatedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+        }
+
+        final fullName = (data?['fullName'] ?? '') as String;
+        final email = (data?['email'] ?? (user.email ?? '')) as String;
+        final bio = (data?['bio'] ?? '') as String;
+
+        // IMPORTANT: only set controller once so typing doesn’t get overwritten
+        if (!_loadedOnce) {
+          _bioController.text = bio;
+          _loadedOnce = true;
+        }
+
+        final initialLetter = fullName.trim().isNotEmpty
+            ? fullName.trim()[0].toUpperCase()
+            : '?';
+
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('My Profile'),
+            backgroundColor: AppColors.background,
+            elevation: 0,
+            foregroundColor: AppColors.textPrimary,
+          ),
+          backgroundColor: AppColors.background,
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 10),
+
+                Center(
+                  child: CircleAvatar(
                     radius: 50,
                     backgroundColor: AppColors.primary.withOpacity(0.2),
                     child: Text(
-                      _nameController.text.isNotEmpty
-                          ? _nameController.text[0].toUpperCase()
-                          : '?',
+                      initialLetter,
                       style: const TextStyle(
                         fontSize: 40,
                         fontWeight: FontWeight.bold,
@@ -74,82 +131,68 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
                   ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: CircleAvatar(
-                      radius: 18,
+                ),
+
+                const SizedBox(height: 24),
+
+                // ✅ Name (read-only)
+                TextField(
+                  readOnly: true,
+                  controller: TextEditingController(text: fullName),
+                  decoration: const InputDecoration(
+                    labelText: 'Full Name',
+                    prefixIcon: Icon(Icons.person),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // ✅ Email (read-only)
+                TextField(
+                  readOnly: true,
+                  controller: TextEditingController(text: email),
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    prefixIcon: Icon(Icons.email),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // ✅ Bio (editable)
+                TextField(
+                  controller: _bioController,
+                  maxLines: 4,
+                  decoration: const InputDecoration(
+                    labelText: 'Bio',
+                    prefixIcon: Icon(Icons.info),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                SizedBox(
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: _saving ? null : () => _saveBio(uid),
+                    style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.camera_alt,
-                          size: 18,
-                          color: Colors.white,
-                        ),
-                        onPressed: () {
-                          // Placeholder for image upload
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Image upload not implemented yet'),
-                            ),
-                          );
-                        },
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 40),
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Full Name',
-                prefixIcon: Icon(Icons.person),
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                prefixIcon: Icon(Icons.email),
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _bioController,
-              decoration: const InputDecoration(
-                labelText: 'Bio',
-                prefixIcon: Icon(Icons.info),
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 3,
-            ),
-            const SizedBox(height: 40),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _saveProfile,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    child: Text(_saving ? 'Saving...' : 'Save Bio'),
                   ),
                 ),
-                child: const Text(
-                  'Save Changes',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 import 'package:commongrounds/theme/colors.dart';
@@ -17,9 +18,9 @@ class SignUpPage extends StatefulWidget {
 
 class _SignUpPageState extends State<SignUpPage>
     with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
+  late final AnimationController _animationController;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<double> _scaleAnimation;
 
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -65,6 +66,7 @@ class _SignUpPageState extends State<SignUpPage>
   }
 
   void _showSnack(String msg, Color color) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(msg), backgroundColor: color),
     );
@@ -76,74 +78,68 @@ class _SignUpPageState extends State<SignUpPage>
     final password = _passwordController.text;
     final confirm = _confirmPasswordController.text;
 
-    final emailRegex =
-        RegExp(r'^[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,}$');
+    final emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,}$');
 
     // ---------- VALIDATION ----------
-    if (name.isEmpty) {
-      _showSnack('Name is required!', Colors.red);
-      return;
-    }
-    if (email.isEmpty) {
-      _showSnack('Email is required!', Colors.red);
-      return;
-    }
+    if (name.isEmpty) return _showSnack('Name is required!', Colors.red);
+    if (email.isEmpty) return _showSnack('Email is required!', Colors.red);
     if (!emailRegex.hasMatch(email)) {
-      _showSnack('Enter a valid email address!', Colors.red);
-      return;
+      return _showSnack('Enter a valid email address!', Colors.red);
     }
-    if (password.isEmpty) {
-      _showSnack('Password is required!', Colors.red);
-      return;
-    }
+    if (password.isEmpty) return _showSnack('Password is required!', Colors.red);
     if (password.length < 6) {
-      _showSnack('Password must be at least 6 characters!', Colors.red);
-      return;
+      return _showSnack('Password must be at least 6 characters!', Colors.red);
     }
     if (password != confirm) {
-      _showSnack('Passwords do not match!', Colors.red);
-      return;
+      return _showSnack('Passwords do not match!', Colors.red);
     }
 
     setState(() => _loading = true);
 
     try {
-      // ---------- FIREBASE SIGN UP ----------
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      // ---------- FIREBASE AUTH SIGN UP ----------
+      final cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      if (!mounted) return;
+      final uid = cred.user!.uid;
 
-      _showSnack(
-        'Account created! Please sign in.',
-        Colors.green,
+      // ✅ Create / update profile doc per account
+      await FirebaseFirestore.instance.collection('users').doc(uid).set(
+        {
+          'fullName': name,
+          'email': email,
+          'bio': '',
+          'photoUrl': null,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+          'isProfileComplete': false,
+        },
+        SetOptions(merge: true),
       );
 
-      // ✅ SAFE NAVIGATION (NO ROUTE ERRORS)
+      // ✅ Flow #2: sign out, then they sign in manually
+      await FirebaseAuth.instance.signOut();
+
+      _showSnack('Account created! Please sign in.', Colors.green);
+
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const SignInPage()),
       );
     } on FirebaseAuthException catch (e) {
-      String msg = 'Sign up failed.';
-      if (e.code == 'email-already-in-use') {
-        msg = 'Email is already registered.';
-      } else if (e.code == 'invalid-email') {
-        msg = 'Invalid email address.';
-      } else if (e.code == 'weak-password') {
-        msg = 'Password is too weak.';
-      } else if (e.code == 'operation-not-allowed') {
-        msg = 'Email/password sign-up is disabled.';
+      String msg = 'Sign up failed. Please try again.';
+      if (e.code == 'email-already-in-use') msg = 'Email is already registered.';
+      if (e.code == 'invalid-email') msg = 'Invalid email address.';
+      if (e.code == 'weak-password') msg = 'Password is too weak.';
+      if (e.code == 'operation-not-allowed') {
+        msg = 'Email/password sign-up is disabled in Firebase.';
       }
-
-      if (mounted) _showSnack(msg, Colors.red);
+      _showSnack(msg, Colors.red);
     } catch (e) {
-      debugPrint('Signup error: $e');
-      if (mounted) {
-        _showSnack('Something went wrong. Try again.', Colors.red);
-      }
+      _showSnack('Something went wrong. Try again.', Colors.red);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -153,7 +149,6 @@ class _SignUpPageState extends State<SignUpPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -167,7 +162,6 @@ class _SignUpPageState extends State<SignUpPage>
           },
         ),
       ),
-
       body: Center(
         child: AnimatedBuilder(
           animation: _animationController,
@@ -188,13 +182,9 @@ class _SignUpPageState extends State<SignUpPage>
                           color: Color(0xFF0D47A1),
                         ),
                         const SizedBox(height: 10),
-                        Text('Create Account',
-                            style: AppTypography.heading1),
+                        Text('Create Account', style: AppTypography.heading1),
                         const SizedBox(height: 6),
-                        Text(
-                          'Focus. Plan. Achieve',
-                          style: AppTypography.heading2,
-                        ),
+                        Text('Focus. Plan. Achieve', style: AppTypography.heading2),
                         const SizedBox(height: 30),
 
                         CustomTextField(
@@ -221,9 +211,10 @@ class _SignUpPageState extends State<SignUpPage>
                         ),
 
                         const SizedBox(height: 20),
+
                         CustomButton(
                           text: _loading ? 'Creating...' : 'Sign Up',
-                          onPressed: _loading ? null : () => _signUp(),
+                          onPressed: _loading ? null : _signUp,
                         ),
                       ],
                     ),

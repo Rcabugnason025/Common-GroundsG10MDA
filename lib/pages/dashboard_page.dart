@@ -2,16 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:commongrounds/theme/colors.dart';
 import 'package:commongrounds/data/mock_detailed_tasks.dart';
 import 'package:commongrounds/data/mock_classes.dart';
-import 'package:commongrounds/data/user_data.dart';
-import 'package:commongrounds/pages/profile_page.dart';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:commongrounds/model/detailed_task.dart';
 import 'package:commongrounds/widgets/task_edit_dialog.dart';
 import 'package:commongrounds/pages/task_list_page.dart';
 import 'package:intl/intl.dart';
-
-
-// If Firebase is ready, uncomment:
-// import 'package:firebase_auth/firebase_auth.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -23,9 +21,10 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   String _getGreeting() {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good Morning';
-    if (hour < 17) return 'Good Afternoon';
-    return 'Good Evening';
+    if (hour >= 5 && hour < 12) return 'Good Morning';
+    if (hour >= 12 && hour < 17) return 'Good Afternoon';
+    if (hour >= 17 && hour < 22) return 'Good Evening';
+    return 'Good Night';
   }
 
   @override
@@ -43,6 +42,8 @@ class _DashboardPageState extends State<DashboardPage> {
         .where((t) => t.priority.contains('High') && t.status != 'Completed')
         .toList();
 
+    final user = FirebaseAuth.instance.currentUser;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SingleChildScrollView(
@@ -50,21 +51,55 @@ class _DashboardPageState extends State<DashboardPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ✅ Greeting + date (kept in body)
-            Text(
-              '$greeting, ${UserData.name}',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-            ),
+            // ✅ Greeting + date (Firestore name)
+            if (user == null)
+              Text(
+                '$greeting, Student',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+              )
+            else
+              StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(user.uid)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  String firstName = 'Student';
+
+                  final data = snapshot.data?.data();
+                  final fullName = (data?['fullName'] ?? '') as String;
+
+                  if (fullName.trim().isNotEmpty) {
+                    firstName = fullName.trim().split(' ').first;
+                  }
+
+                  return Text(
+                    '$greeting, $firstName',
+                    maxLines: 1, // ✅ keep on one line
+                    overflow: TextOverflow.ellipsis,
+                    style:
+                        Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
+                  );
+                },
+              ),
+
             const SizedBox(height: 4),
+
             Text(
               dateStr,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: Colors.grey[600],
                   ),
             ),
+
             const SizedBox(height: 24),
 
             // Welcome Banner
@@ -104,6 +139,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 ],
               ),
             ),
+
             const SizedBox(height: 24),
 
             // QUICK ACTIONS
@@ -142,6 +178,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 ],
               ),
             ),
+
             const SizedBox(height: 24),
 
             // Stats Cards
@@ -168,6 +205,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ],
             ),
+
             const SizedBox(height: 24),
 
             // High Priority
@@ -199,7 +237,9 @@ class _DashboardPageState extends State<DashboardPage> {
                   .titleLarge
                   ?.copyWith(fontWeight: FontWeight.bold),
             ),
+
             const SizedBox(height: 12),
+
             SizedBox(
               height: 140,
               child: ListView.builder(
@@ -461,8 +501,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: _getPriorityColor(task.priority).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),

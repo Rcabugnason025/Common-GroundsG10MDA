@@ -8,7 +8,8 @@ import 'package:commongrounds/widgets/starting_button.dart';
 import 'package:commongrounds/widgets/starting_textfield.dart';
 import 'package:commongrounds/pages/sign_up_page.dart';
 import 'package:commongrounds/pages/main_page.dart';
-// OR: import 'package:commongrounds/pages/dashboard_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
@@ -76,59 +77,78 @@ class _SignInPageState extends State<SignInPage>
   }
 
   Future<void> _signIn() async {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text;
-    final emailRegex =
-        RegExp(r'^[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,}$');
+  final email = _emailController.text.trim();
+  final password = _passwordController.text;
+  final emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,}$');
 
-    if (email.isEmpty) {
-      _showSnack('Email is required!', Colors.red);
+  if (email.isEmpty) {
+    _showSnack('Email is required!', Colors.red);
+    return;
+  }
+  if (!emailRegex.hasMatch(email)) {
+    _showSnack('Enter a valid email address!', Colors.red);
+    return;
+  }
+  if (password.isEmpty) {
+    _showSnack('Password is required!', Colors.red);
+    return;
+  }
+
+  setState(() => _loading = true);
+
+  try {
+    // ✅ Sign in
+    final cred = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    final user = cred.user;
+    if (user == null) {
+      _showSnack('Sign in failed. Try again.', Colors.red);
       return;
     }
-    if (!emailRegex.hasMatch(email)) {
-      _showSnack('Enter a valid email address!', Colors.red);
-      return;
+
+    // ✅ Ensure Firestore profile doc exists (important!)
+    final docRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+    final snap = await docRef.get();
+
+    if (!snap.exists) {
+      await docRef.set({
+        'fullName': user.displayName ?? '',
+        'email': user.email ?? email,
+        'bio': '',
+        'photoUrl': null,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+        'isProfileComplete': false,
+      }, SetOptions(merge: true));
     }
-    if (password.isEmpty) {
-      _showSnack('Password is required!', Colors.red);
-      return;
-    }
 
-    setState(() => _loading = true);
+    if (!mounted) return;
 
-    try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+    _showSnack('Sign in successful!', Colors.green);
 
-      if (!mounted) return;
+    // ✅ Go to MainPage
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const MainPage()),
+    );
+  } on FirebaseAuthException catch (e) {
+    String msg = 'Sign in failed.';
+    if (e.code == 'user-not-found') msg = 'No account found for that email.';
+    else if (e.code == 'wrong-password') msg = 'Wrong password.';
+    else if (e.code == 'invalid-credential') msg = 'Incorrect email or password.';
+    else if (e.code == 'invalid-email') msg = 'Invalid email.';
+    else if (e.code == 'user-disabled') msg = 'This account has been disabled.';
 
-      _showSnack('Sign in successful!', Colors.green);
-
-      // ✅ SAFE NAVIGATION TO MAIN / DASHBOARD
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const MainPage(),
-          // OR: builder: (_) => const DashboardPage(),
-        ),
-      );
-    } on FirebaseAuthException catch (e) {
-      String msg = 'Sign in failed.';
-      if (e.code == 'user-not-found') msg = 'No account found for that email.';
-      else if (e.code == 'wrong-password') msg = 'Wrong password.';
-      else if (e.code == 'invalid-credential') msg = 'Incorrect email or password.';
-      else if (e.code == 'invalid-email') msg = 'Invalid email.';
-      else if (e.code == 'user-disabled') msg = 'This account has been disabled.';
-
-      if (mounted) _showSnack(msg, Colors.red);
-    } catch (e) {
-      debugPrint('Sign in error: $e');
-      if (mounted) _showSnack('Something went wrong. Try again.', Colors.red);
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
+    if (mounted) _showSnack(msg, Colors.red);
+  } catch (e) {
+    debugPrint('Sign in error: $e');
+    if (mounted) _showSnack('Something went wrong. Try again.', Colors.red);
+  } finally {
+    if (mounted) setState(() => _loading = false);
+  }
   }
 
   void _forgotPassword() {
