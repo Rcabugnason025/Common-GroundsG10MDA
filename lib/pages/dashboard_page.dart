@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:commongrounds/theme/colors.dart';
 import 'package:commongrounds/data/mock_detailed_tasks.dart';
 import 'package:commongrounds/data/mock_classes.dart';
-import 'package:commongrounds/data/user_data.dart';
-import 'package:commongrounds/pages/profile_page.dart';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:commongrounds/model/detailed_task.dart';
 import 'package:commongrounds/widgets/task_edit_dialog.dart';
 import 'package:commongrounds/pages/task_list_page.dart';
@@ -17,17 +19,12 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  // Removed local userName variable
-
   String _getGreeting() {
     final hour = DateTime.now().hour;
-    if (hour < 12) {
-      return 'Good Morning';
-    } else if (hour < 17) {
-      return 'Good Afternoon';
-    } else {
-      return 'Good Evening';
-    }
+    if (hour >= 5 && hour < 12) return 'Good Morning';
+    if (hour >= 12 && hour < 17) return 'Good Afternoon';
+    if (hour >= 17 && hour < 22) return 'Good Evening';
+    return 'Good Night';
   }
 
   @override
@@ -37,15 +34,15 @@ class _DashboardPageState extends State<DashboardPage> {
     final dateStr = DateFormat('EEEE, MMM d').format(today);
 
     // Calculate stats
-    final pendingTasks = mockDetailedTasks
-        .where((t) => t.status != 'Completed')
-        .length;
-    final completedTasks = mockDetailedTasks
-        .where((t) => t.status == 'Completed')
-        .length;
+    final pendingTasks =
+        mockDetailedTasks.where((t) => t.status != 'Completed').length;
+    final completedTasks =
+        mockDetailedTasks.where((t) => t.status == 'Completed').length;
     final highPriorityTasks = mockDetailedTasks
         .where((t) => t.priority.contains('High') && t.status != 'Completed')
         .toList();
+
+    final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -54,61 +51,55 @@ class _DashboardPageState extends State<DashboardPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Section
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '$greeting, ${UserData.name}',
-                        style: Theme.of(context).textTheme.headlineMedium
-                            ?.copyWith(
+            // ✅ Greeting + date (Firestore name)
+            if (user == null)
+              Text(
+                '$greeting, Student',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+              )
+            else
+              StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(user.uid)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  String firstName = 'Student';
+
+                  final data = snapshot.data?.data();
+                  final fullName = (data?['fullName'] ?? '') as String;
+
+                  if (fullName.trim().isNotEmpty) {
+                    firstName = fullName.trim().split(' ').first;
+                  }
+
+                  return Text(
+                    '$greeting, $firstName',
+                    maxLines: 1, // ✅ keep on one line
+                    overflow: TextOverflow.ellipsis,
+                    style:
+                        Theme.of(context).textTheme.headlineMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: AppColors.textPrimary,
                             ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        dateStr,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
+                  );
+                },
+              ),
+
+            const SizedBox(height: 4),
+
+            Text(
+              dateStr,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Colors.grey[600],
                   ),
-                ),
-                InkWell(
-                  borderRadius: BorderRadius.circular(24),
-                  onTap: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ProfilePage(),
-                      ),
-                    );
-                    setState(() {}); // Refresh state to update name if changed
-                  },
-                  child: Hero(
-                    tag: 'profile-pic',
-                    child: CircleAvatar(
-                      radius: 24,
-                      backgroundColor: AppColors.primary,
-                      child: Text(
-                        UserData.name.isNotEmpty ? UserData.name[0] : '?',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
             ),
+
             const SizedBox(height: 24),
 
             // Welcome Banner
@@ -136,9 +127,9 @@ class _DashboardPageState extends State<DashboardPage> {
                   Text(
                     "Ready to be productive?",
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -148,9 +139,10 @@ class _DashboardPageState extends State<DashboardPage> {
                 ],
               ),
             ),
+
             const SizedBox(height: 24),
 
-            // QUICK ACTIONS (New engaging feature)
+            // QUICK ACTIONS
             SizedBox(
               height: 100,
               child: ListView(
@@ -186,6 +178,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 ],
               ),
             ),
+
             const SizedBox(height: 24),
 
             // Stats Cards
@@ -212,22 +205,23 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ],
             ),
+
             const SizedBox(height: 24),
 
-            // Section Title: High Priority
+            // High Priority
             if (highPriorityTasks.isNotEmpty) ...[
               Text(
                 'High Priority',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(context)
+                    .textTheme
+                    .titleLarge
+                    ?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
-              // High Priority Task List
               ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: highPriorityTasks.take(3).length, // Show top 3
+                itemCount: highPriorityTasks.take(3).length,
                 itemBuilder: (context, index) {
                   return _buildTaskCard(context, highPriorityTasks[index]);
                 },
@@ -235,14 +229,17 @@ class _DashboardPageState extends State<DashboardPage> {
               const SizedBox(height: 24),
             ],
 
-            // Section Title: Upcoming Classes (Mock logic for demo)
+            // Upcoming Classes
             Text(
               'Upcoming Classes',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
+
             const SizedBox(height: 12),
+
             SizedBox(
               height: 140,
               child: ListView.builder(
@@ -364,9 +361,9 @@ class _DashboardPageState extends State<DashboardPage> {
               arguments: {'showBackButton': true},
             );
           } else {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text("Opened $label")));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Opened $label")),
+            );
           }
         },
         borderRadius: BorderRadius.circular(16),
@@ -399,9 +396,8 @@ class _DashboardPageState extends State<DashboardPage> {
     return InkWell(
       onTap: () {
         if (title == 'Pending Tasks') {
-          final pending = mockDetailedTasks
-              .where((t) => t.status != 'Completed')
-              .toList();
+          final pending =
+              mockDetailedTasks.where((t) => t.status != 'Completed').toList();
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -410,9 +406,8 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
           );
         } else if (title == 'Completed') {
-          final completed = mockDetailedTasks
-              .where((t) => t.status == 'Completed')
-              .toList();
+          final completed =
+              mockDetailedTasks.where((t) => t.status == 'Completed').toList();
           Navigator.push(
             context,
             MaterialPageRoute(

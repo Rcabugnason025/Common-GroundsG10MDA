@@ -4,7 +4,7 @@ import 'package:commongrounds/theme/colors.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final double horizontalPadding;
   final double verticalPadding;
   final double borderRadius;

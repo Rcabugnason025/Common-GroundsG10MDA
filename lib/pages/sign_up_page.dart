@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
 import 'package:commongrounds/services/auth_service.dart';
 import 'package:commongrounds/widgets/starting_button.dart';
 import 'package:commongrounds/theme/colors.dart';
 import 'package:commongrounds/theme/typography.dart';
-import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:commongrounds/widgets/starting_textfield.dart';
+import 'package:commongrounds/pages/sign_in_page.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -15,9 +16,9 @@ class SignUpPage extends StatefulWidget {
 
 class _SignUpPageState extends State<SignUpPage>
     with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
+  late final AnimationController _animationController;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<double> _scaleAnimation;
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -35,14 +36,14 @@ class _SignUpPageState extends State<SignUpPage>
       duration: const Duration(milliseconds: 1500),
     );
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _animationController,
         curve: const Interval(0.0, 0.6, curve: Curves.easeIn),
       ),
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1).animate(
       CurvedAnimation(
         parent: _animationController,
         curve: const Interval(0.0, 0.6, curve: Curves.easeOutBack),
@@ -63,6 +64,7 @@ class _SignUpPageState extends State<SignUpPage>
     super.dispose();
   }
 
+<<<<<<< HEAD
   Future<void> _goToMainPage() async {
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -122,8 +124,16 @@ class _SignUpPageState extends State<SignUpPage>
       course: _courseController.text.trim().isNotEmpty
           ? _courseController.text.trim()
           : "BS Computer Science",
+=======
+  void _showSnack(String msg, Color color) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), backgroundColor: color),
+>>>>>>> eb9db82089c4d3903b07165166fb444bd9297a63
     );
+  }
 
+<<<<<<< HEAD
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -142,6 +152,78 @@ class _SignUpPageState extends State<SignUpPage>
           backgroundColor: Colors.red,
         ),
       );
+=======
+  Future<void> _signUp() async {
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    final confirm = _confirmPasswordController.text;
+
+    final emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,}$');
+
+    // ---------- VALIDATION ----------
+    if (name.isEmpty) return _showSnack('Name is required!', Colors.red);
+    if (email.isEmpty) return _showSnack('Email is required!', Colors.red);
+    if (!emailRegex.hasMatch(email)) {
+      return _showSnack('Enter a valid email address!', Colors.red);
+    }
+    if (password.isEmpty) return _showSnack('Password is required!', Colors.red);
+    if (password.length < 6) {
+      return _showSnack('Password must be at least 6 characters!', Colors.red);
+    }
+    if (password != confirm) {
+      return _showSnack('Passwords do not match!', Colors.red);
+    }
+
+    setState(() => _loading = true);
+
+    try {
+      // ---------- FIREBASE AUTH SIGN UP ----------
+      final cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      final uid = cred.user!.uid;
+
+      // ✅ Create / update profile doc per account
+      await FirebaseFirestore.instance.collection('users').doc(uid).set(
+        {
+          'fullName': name,
+          'email': email,
+          'bio': '',
+          'photoUrl': null,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+          'isProfileComplete': false,
+        },
+        SetOptions(merge: true),
+      );
+
+      // ✅ Flow #2: sign out, then they sign in manually
+      await FirebaseAuth.instance.signOut();
+
+      _showSnack('Account created! Please sign in.', Colors.green);
+
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const SignInPage()),
+      );
+    } on FirebaseAuthException catch (e) {
+      String msg = 'Sign up failed. Please try again.';
+      if (e.code == 'email-already-in-use') msg = 'Email is already registered.';
+      if (e.code == 'invalid-email') msg = 'Invalid email address.';
+      if (e.code == 'weak-password') msg = 'Password is too weak.';
+      if (e.code == 'operation-not-allowed') {
+        msg = 'Email/password sign-up is disabled in Firebase.';
+      }
+      _showSnack(msg, Colors.red);
+    } catch (e) {
+      _showSnack('Something went wrong. Try again.', Colors.red);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+>>>>>>> eb9db82089c4d3903b07165166fb444bd9297a63
     }
   }
 
@@ -149,24 +231,20 @@ class _SignUpPageState extends State<SignUpPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-
-      // AppBar with back button (WORKING)
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () {
-            // Real back behavior
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            } else {
-              // fallback (in case it was opened directly)
-              Navigator.pushReplacementNamed(context, '/signIn');
-            }
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const SignInPage()),
+            );
           },
         ),
       ),
+<<<<<<< HEAD
 
       body: Stack(
         children: [

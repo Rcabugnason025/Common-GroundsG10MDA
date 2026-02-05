@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "648461228472",
+    "project_id": "common-groundsg10mda-6aae6",
+    "storage_bucket": "common-groundsg10mda-6aae6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:648461228472:android:73225f2cc56ac0dbac174d",
+        "android_client_info": {
+          "package_name": "com.group10.commongrounds.commongrounds"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCRqM1RSOCXD4cdv3Y6xuLrOze5-CTOwgQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
