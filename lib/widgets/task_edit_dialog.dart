@@ -41,7 +41,6 @@ class _TaskEditDialogState extends State<TaskEditDialog> {
   @override
   void initState() {
     super.initState();
-    final isEditing = widget.task != null;
     title = widget.task?.title ?? '';
     subject = widget.task?.subject ?? '';
     const priorityOptions = ['High Priority', 'Medium Priority', 'Low Priority'];

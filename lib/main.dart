@@ -13,10 +13,13 @@ import 'package:commongrounds/pages/calendar_page.dart';
 import 'package:commongrounds/services/auth_service.dart';
 import 'package:commongrounds/pages/profile_page.dart';
 import 'package:commongrounds/pages/notifications_page.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:commongrounds/firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   // Initialize Local Auth
   await AuthService().init();
 

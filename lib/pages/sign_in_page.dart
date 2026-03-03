@@ -5,7 +5,6 @@ import 'package:commongrounds/theme/colors.dart';
 import 'package:commongrounds/theme/typography.dart';
 import 'package:commongrounds/widgets/starting_textfield.dart';
 import 'package:commongrounds/pages/sign_up_page.dart';
-import 'package:commongrounds/pages/main_page.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 class SignInPage extends StatefulWidget {

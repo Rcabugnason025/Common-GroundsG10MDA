@@ -3,6 +3,10 @@ import 'package:commongrounds/data/mock_detailed_tasks.dart';
 import 'package:commongrounds/model/detailed_task.dart';
 import 'package:commongrounds/widgets/task_edit_dialog.dart';
 import 'package:commongrounds/widgets/task_delete_dialog.dart';
+import 'package:commongrounds/data/repositories/task_repository.dart';
+import 'package:commongrounds/data/repositories/firebase_task_repository.dart';
+import 'package:commongrounds/data/repositories/rest_task_repository.dart';
+import 'package:commongrounds/config/app_config.dart';
 
 class TasksPage extends StatefulWidget {
   const TasksPage({super.key});
@@ -12,14 +16,54 @@ class TasksPage extends StatefulWidget {
 }
 
 class _TasksPageState extends State<TasksPage> {
-  // -------------------------
-  // Helpers / Actions
-  // -------------------------
+  late TaskRepository _repo;
+  List<DetailedTask> _tasks = [];
+  bool _loading = true;
+  String _backend = 'firebase';
+
+  @override
+  void initState() {
+    super.initState();
+    _selectBackend(_backend);
+  }
+
+  void _selectBackend(String backend) {
+    if (backend == 'rest' && AppConfig.restBaseUrl.isNotEmpty) {
+      _repo = RestTaskRepository();
+      _backend = 'rest';
+    } else {
+      _repo = FirebaseTaskRepository();
+      _backend = 'firebase';
+    }
+    _loadTasks();
+  }
+
+  Future<void> _loadTasks() async {
+    setState(() {
+      _loading = true;
+    });
+    try {
+      final result = await _repo.fetchTasks();
+      setState(() {
+        _tasks = result;
+        _loading = false;
+      });
+    } catch (_) {
+      setState(() {
+        _tasks = List<DetailedTask>.from(mockDetailedTasks);
+        _loading = false;
+      });
+    }
+  }
 
   void _deleteTask(int index, {bool showFeedback = true}) {
+    final id = _tasks[index].id;
     setState(() {
-      mockDetailedTasks.removeAt(index);
+      _tasks.removeAt(index);
     });
+    if (id != null) {
+      _repo.deleteTask(id);
+    }
 
     if (showFeedback) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -59,9 +103,13 @@ class _TasksPageState extends State<TasksPage> {
                       : const SizedBox(width: 24),
                   title: Text(status),
                   onTap: () {
+                    final updated = task.copyWith(status: status);
                     setState(() {
-                      mockDetailedTasks[index] = task.copyWith(status: status);
+                      _tasks[index] = updated;
                     });
+                    if (updated.id != null) {
+                      _repo.updateTask(updated);
+                    }
 
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -131,10 +179,6 @@ class _TasksPageState extends State<TasksPage> {
     );
   }
 
-  // -------------------------
-  // Add / Edit Dialog
-  // -------------------------
-
   void _addOrEditTask({DetailedTask? task, int? index}) {
     showDialog(
       context: context,
@@ -143,15 +187,27 @@ class _TasksPageState extends State<TasksPage> {
         task: task,
         index: index,
         onSave: (updatedTask) {
-          setState(() {
-            if (task != null && index != null) {
-              // Editing existing task
-              mockDetailedTasks[index] = updatedTask;
-            } else {
-              // Adding new task
-              mockDetailedTasks.insert(0, updatedTask);
+          if (task != null && index != null) {
+            final withId = updatedTask.copyWith(id: task.id);
+            setState(() {
+              _tasks[index] = withId;
+            });
+            if (withId.id != null) {
+              _repo.updateTask(withId);
             }
-          });
+          } else {
+            setState(() {
+              _tasks.insert(0, updatedTask);
+            });
+            _repo.createTask(updatedTask).then((created) {
+              final idx = _tasks.indexOf(updatedTask);
+              if (idx != -1) {
+                setState(() {
+                  _tasks[idx] = created;
+                });
+              }
+            });
+          }
         },
         onDelete: task != null && index != null
             ? () => _confirmDelete(index)
@@ -159,10 +215,6 @@ class _TasksPageState extends State<TasksPage> {
       ),
     );
   }
-
-  // -------------------------
-  // UI
-  // -------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -173,16 +225,35 @@ class _TasksPageState extends State<TasksPage> {
       appBar: AppBar(
         title: const Text('Tasks'),
         centerTitle: true,
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: _selectBackend,
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'firebase',
+                child: Text('Use Firebase'),
+              ),
+              PopupMenuItem(
+                value: 'rest',
+                enabled: AppConfig.restBaseUrl.isNotEmpty,
+                child: const Text('Use REST API'),
+              ),
+            ],
+            icon: const Icon(Icons.sync),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _addOrEditTask(),
         child: const Icon(Icons.add),
       ),
-      body: ListView.builder(
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: mockDetailedTasks.length,
+        itemCount: _tasks.length,
         itemBuilder: (context, index) {
-          final task = mockDetailedTasks[index];
+          final task = _tasks[index];
 
           return Dismissible(
             key: UniqueKey(),

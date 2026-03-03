@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:commongrounds/model/task_step.dart';
 
 class DetailedTask {
+  final String? id;
   final String title;
   final String subject;
   final List<TaskStep>? detailedSteps;
@@ -14,6 +15,7 @@ class DetailedTask {
   final String category;
 
   DetailedTask({
+    this.id,
     required this.title,
     required this.subject,
     this.detailedSteps,
@@ -47,6 +49,7 @@ class DetailedTask {
         : json['progress'] as double;
 
     return DetailedTask(
+      id: json['id']?.toString(),
       title: json['title'] as String,
       subject: json['subject'] as String,
       detailedSteps: steps,
@@ -60,7 +63,28 @@ class DetailedTask {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    final descriptionData = detailedSteps != null
+        ? detailedSteps!.map((e) => e.toJson()).toList()
+        : simpleDescription;
+    final map = {
+      'title': title,
+      'subject': subject,
+      'description': descriptionData,
+      'deadline': deadline.toIso8601String(),
+      'priority': priority,
+      'status': status,
+      'progress': progress,
+      'category': category,
+    };
+    if (id != null) {
+      map['id'] = id;
+    }
+    return map;
+  }
+
   DetailedTask copyWith({
+    String? id,
     String? title,
     String? subject,
     List<TaskStep>? detailedSteps,
@@ -73,6 +97,7 @@ class DetailedTask {
     String? category,
   }) {
     return DetailedTask(
+      id: id ?? this.id,
       title: title ?? this.title,
       subject: subject ?? this.subject,
       detailedSteps: detailedSteps ?? this.detailedSteps,

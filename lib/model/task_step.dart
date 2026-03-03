@@ -19,4 +19,13 @@ class TaskStep {
       details: json['details'] as String,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (step != null) 'step': step,
+      if (name != null) 'name': name,
+      if (phase != null) 'phase': phase,
+      'details': details,
+    };
+  }
 }
