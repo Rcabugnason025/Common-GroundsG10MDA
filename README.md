@@ -37,7 +37,7 @@ To run this project locally, ensure you have [Flutter](https://flutter.dev/docs/
 
 You can run the app on an emulator (Android/iOS) or in your web browser.
 
-**Note:** This project uses local storage (`shared_preferences`) for data persistence. No external database setup is required.
+**Note:** This project supports **Remote Data Management** using **Firebase Firestore** and a **REST API**. You can switch between these backends at runtime.
 
 **Run on Android/iOS Emulator:**
 ```bash
@@ -49,7 +49,33 @@ flutter run
 flutter run -d chrome
 ```
 
+## Configuration
+
+### Firebase Setup
+1.  Ensure `android/app/google-services.json` is present in your project.
+2.  Enable **Cloud Firestore** in your Firebase Console.
+3.  Create a collection named `tasks`.
+
+### REST API Setup
+1.  Open `lib/config/app_config.dart`.
+2.  Set the `restBaseUrl` to your API endpoint (e.g., a MockAPI.io URL).
+    ```dart
+    static const String restBaseUrl = 'https://your-api-endpoint.com/api/v1';
+    ```
+
 ## Features
+
+### Milestone 2: Data Management (Sprints 3 & 4)
+- **Remote Data Persistence**:
+  - **Firebase Firestore**: Real-time cloud database integration for tasks.
+  - **REST API**: HTTP-based CRUD operations for tasks (configurable endpoint).
+- **Repository Pattern**:
+  - Abstracted data layer allowing seamless switching between Firebase and REST backends.
+  - **Runtime Switching**: Toggle between "Use Firebase" and "Use REST API" directly from the Tasks page.
+- **Data Synchronization**:
+  - Create, Read, Update, and Delete (CRUD) operations are fully synchronized with the selected remote backend.
+- **Local Fallback**:
+  - Graceful handling of connection errors with fallback to local mock data for demonstration purposes.
 
 ### Sprint 1: User Input & Touch Events
 - **User Input Handling**: 
@@ -82,6 +108,14 @@ flutter run -d chrome
 ### 3. Navigation State Management
 - **Challenge**: Keeping the Bottom Navigation bar synced with the current page content.
 - **Solution**: Used a `StatefulWidget` for the `MainPage` to track the `_currentIndex` and dynamically rebuild the `body` based on the selected tab, ensuring the UI always reflects the active section.
+
+### 4. Dual Backend Integration (Milestone 2)
+- **Challenge**: Implementing both Firebase and REST API without duplicating UI logic.
+- **Solution**: Adopted the **Repository Pattern**. We created an abstract `TaskRepository` class with `FirebaseTaskRepository` and `RestTaskRepository` implementations. The UI interacts only with the abstract interface, allowing us to swap backends dynamically.
+
+### 5. Data Model Serialization (Milestone 2)
+- **Challenge**: Ensuring Dart objects correctly map to both Firestore documents and JSON for REST APIs.
+- **Solution**: Enhanced the `DetailedTask` model with robust `fromJson` and `toJson` methods that handle data type conversions (e.g., Dates to ISO strings, Timestamps) and nullable fields.
 
 ## Troubleshooting
 
