@@ -124,6 +124,7 @@ class _SignUpPageState extends State<SignUpPage>
           ? _courseController.text.trim()
           : "BS Computer Science",
     );
+    if (!mounted) return;
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -134,6 +135,7 @@ class _SignUpPageState extends State<SignUpPage>
       );
 
       Future.delayed(const Duration(milliseconds: 800), () {
+        if (!mounted) return;
         Navigator.of(context).pushReplacementNamed('/main');
       });
     } else {
@@ -174,7 +176,7 @@ class _SignUpPageState extends State<SignUpPage>
               width: 250,
               height: 200,
               decoration: BoxDecoration(
-                color: AppColors.navbar.withOpacity(0.3),
+                color: AppColors.navbar.withAlpha((0.3 * 255).round()),
                 shape: BoxShape.circle,
               ),
             ),
@@ -186,7 +188,7 @@ class _SignUpPageState extends State<SignUpPage>
               width: 300,
               height: 200,
               decoration: BoxDecoration(
-                color: AppColors.navbar.withOpacity(0.3),
+                color: AppColors.navbar.withAlpha((0.3 * 255).round()),
                 shape: BoxShape.circle,
               ),
             ),
@@ -198,7 +200,7 @@ class _SignUpPageState extends State<SignUpPage>
               width: 250,
               height: 200,
               decoration: BoxDecoration(
-                color: AppColors.navbar.withOpacity(0.3),
+                color: AppColors.navbar.withAlpha((0.3 * 255).round()),
                 shape: BoxShape.circle,
               ),
             ),
@@ -210,7 +212,7 @@ class _SignUpPageState extends State<SignUpPage>
               width: 300,
               height: 200,
               decoration: BoxDecoration(
-                color: AppColors.navbar.withOpacity(0.3),
+                color: AppColors.navbar.withAlpha((0.3 * 255).round()),
                 shape: BoxShape.circle,
               ),
             ),

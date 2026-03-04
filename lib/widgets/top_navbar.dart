@@ -19,7 +19,7 @@ class TopNavbar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: AppColors.navbar.withOpacity(0.6),
+      backgroundColor: AppColors.navbar.withAlpha((0.6 * 255).round()),
       elevation: 0,
       title: Text(
         pageTitle,

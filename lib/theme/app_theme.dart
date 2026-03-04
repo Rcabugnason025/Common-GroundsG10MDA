@@ -19,7 +19,7 @@ class AppTheme {
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: AppColors.navbar.withOpacity(0.1),
+      fillColor: AppColors.navbar.withAlpha((0.1 * 255).round()),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
         borderSide: BorderSide.none,

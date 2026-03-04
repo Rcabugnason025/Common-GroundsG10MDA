@@ -56,10 +56,11 @@ class _FocusModePageState extends State<FocusModePage> {
       // Reset current time to full duration for next run
       if (currentMode == "Focus Mode") {
         currentTime = focusDuration;
-      } else if (currentMode == "Short Break")
+      } else if (currentMode == "Short Break") {
         currentTime = shortBreakDuration;
-      else
+      } else {
         currentTime = longBreakDuration;
+      }
     });
   }
 

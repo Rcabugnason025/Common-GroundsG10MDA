@@ -36,7 +36,7 @@ class CustomTextField extends StatelessWidget {
         labelStyle: AppTypography.bodySmall,
         prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: AppColors.icon) : null,
         filled: true,
-        fillColor: AppColors.textField.withOpacity(0.2),
+        fillColor: AppColors.textField.withAlpha((0.2 * 255).round()),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(50),
           borderSide: BorderSide.none,

@@ -33,6 +33,7 @@ class _CalendarPageState extends State<CalendarPage> {
 
   Future<void> _confirmDelete(int index) async {
     final shouldDelete = await TaskDeleteDialog.show(context);
+    if (!mounted) return;
     if (shouldDelete) {
       setState(() {
         mockDetailedTasks.removeAt(index);
@@ -110,14 +111,16 @@ class _CalendarPageState extends State<CalendarPage> {
                         Icon(
                           Icons.calendar_today_outlined,
                           size: 64,
-                          color: colorScheme.onSurface.withOpacity(0.3),
+                          color: colorScheme.onSurface
+                              .withAlpha((0.3 * 255).round()),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           'No upcoming deadlines',
                           style: TextStyle(
                             fontSize: 18,
-                            color: colorScheme.onSurface.withOpacity(0.5),
+                            color: colorScheme.onSurface
+                                .withAlpha((0.5 * 255).round()),
                           ),
                         ),
                       ],
@@ -207,10 +210,10 @@ class TaskCard extends StatelessWidget {
                         colors: [
                           Theme.of(
                             context,
-                          ).colorScheme.primary.withOpacity(0.1),
+                          ).colorScheme.primary.withAlpha((0.1 * 255).round()),
                           Theme.of(
                             context,
-                          ).colorScheme.secondary.withOpacity(0.1),
+                          ).colorScheme.secondary.withAlpha((0.1 * 255).round()),
                         ],
                       ),
                       borderRadius: const BorderRadius.vertical(
@@ -224,7 +227,7 @@ class TaskCard extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: Theme.of(
                               context,
-                            ).colorScheme.primary.withOpacity(0.2),
+                            ).colorScheme.primary.withAlpha((0.2 * 255).round()),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
@@ -251,7 +254,8 @@ class TaskCard extends StatelessWidget {
                                 style: TextStyle(
                                   color: Theme.of(
                                     context,
-                                  ).colorScheme.onSurface.withOpacity(0.7),
+                                  ).colorScheme.onSurface
+                                      .withAlpha((0.7 * 255).round()),
                                 ),
                               ),
                             ],
@@ -309,7 +313,8 @@ class TaskCard extends StatelessWidget {
                             style: TextStyle(
                               color: Theme.of(
                                 context,
-                              ).colorScheme.onSurface.withOpacity(0.7),
+                              ).colorScheme.onSurface
+                                  .withAlpha((0.7 * 255).round()),
                             ),
                           ),
                         ],
@@ -369,7 +374,7 @@ class TaskCard extends StatelessWidget {
                   fontSize: 12,
                   color: Theme.of(
                     context,
-                  ).colorScheme.onSurface.withOpacity(0.6),
+                  ).colorScheme.onSurface.withAlpha((0.6 * 255).round()),
                 ),
               ),
               const SizedBox(height: 2),
@@ -415,10 +420,10 @@ class TaskCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: const Color(0xFFE1BEE7).withOpacity(0.3),
+          color: const Color(0xFFE1BEE7).withAlpha((0.3 * 255).round()),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: const Color(0xFFCE93D8).withOpacity(0.3),
+            color: const Color(0xFFCE93D8).withAlpha((0.3 * 255).round()),
             width: 1,
           ),
         ),
@@ -443,7 +448,7 @@ class TaskCard extends StatelessWidget {
               Text(
                 task.subject,
                 style: TextStyle(
-                  color: Colors.black87.withOpacity(0.7),
+                  color: Colors.black87.withAlpha((0.7 * 255).round()),
                   fontSize: 14,
                 ),
                 maxLines: 1,
@@ -460,13 +465,13 @@ class TaskCard extends StatelessWidget {
                       Icon(
                         Icons.access_time,
                         size: 16,
-                        color: Colors.black87.withOpacity(0.6),
+                        color: Colors.black87.withAlpha((0.6 * 255).round()),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         DateFormat('h:mm a').format(task.deadline),
                         style: TextStyle(
-                          color: Colors.black87.withOpacity(0.7),
+                          color: Colors.black87.withAlpha((0.7 * 255).round()),
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),

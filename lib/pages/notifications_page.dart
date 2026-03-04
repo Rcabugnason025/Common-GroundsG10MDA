@@ -9,7 +9,6 @@ class NotificationsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final today = DateTime.now();
-    final todayStr = DateFormat('yyyy-MM-dd').format(today);
 
     // Filter tasks due today
     final dueTodayTasks = mockDetailedTasks.where((task) {
@@ -95,7 +94,7 @@ class NotificationsPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withAlpha((0.05 * 255).round()),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -107,7 +106,7 @@ class NotificationsPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withAlpha((0.1 * 255).round()),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: color, size: 24),

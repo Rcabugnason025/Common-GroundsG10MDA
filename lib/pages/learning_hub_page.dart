@@ -9,13 +9,6 @@ class LearningHubPage extends StatefulWidget {
 }
 
 class _LearningHubPageState extends State<LearningHubPage> {
-  int _selectedIndex = 0;
-
-  void _onNavTap(int index) {
-    setState(() => _selectedIndex = index);
-
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

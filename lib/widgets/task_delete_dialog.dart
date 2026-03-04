@@ -19,7 +19,9 @@ class TaskDeleteDialog {
         ),
         content: Text(
           'Are you sure you want to delete this task? This action cannot be undone.',
-          style: TextStyle(color: colorScheme.onSurface.withOpacity(0.75)),
+          style: TextStyle(
+            color: colorScheme.onSurface.withAlpha((0.75 * 255).round()),
+          ),
         ),
         actions: [
           TextButton(

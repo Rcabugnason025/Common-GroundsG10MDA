@@ -108,6 +108,7 @@ class _SignInPageState extends State<SignInPage>
 
     // Call AuthService
     final success = await AuthService().signIn(email, password);
+    if (!mounted) return;
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -117,6 +118,7 @@ class _SignInPageState extends State<SignInPage>
         ),
       );
       Future.delayed(const Duration(milliseconds: 800), () {
+        if (!mounted) return;
         Navigator.of(context).pushReplacementNamed('/main');
       });
     } else {

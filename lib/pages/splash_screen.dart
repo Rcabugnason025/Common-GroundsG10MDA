@@ -52,6 +52,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _goToSignInPage() async {
     final isLoggedIn = await AuthService().isLoggedIn;
+    if (!mounted) return;
     if (isLoggedIn) {
       Navigator.of(context).pushReplacementNamed('/main');
     } else {
@@ -72,7 +73,7 @@ class _SplashScreenState extends State<SplashScreen>
               width: 250,
               height: 200,
               decoration: BoxDecoration(
-                color: AppColors.navbar.withOpacity(0.3),
+                color: AppColors.navbar.withAlpha((0.3 * 255).round()),
                 shape: BoxShape.circle,
               ),
             ),
@@ -84,7 +85,7 @@ class _SplashScreenState extends State<SplashScreen>
               width: 300,
               height: 200,
               decoration: BoxDecoration(
-                color: AppColors.navbar.withOpacity(0.3),
+                color: AppColors.navbar.withAlpha((0.3 * 255).round()),
                 shape: BoxShape.circle,
               ),
             ),
@@ -96,7 +97,7 @@ class _SplashScreenState extends State<SplashScreen>
               width: 250,
               height: 200,
               decoration: BoxDecoration(
-                color: AppColors.navbar.withOpacity(0.3),
+                color: AppColors.navbar.withAlpha((0.3 * 255).round()),
                 shape: BoxShape.circle,
               ),
             ),
@@ -108,7 +109,7 @@ class _SplashScreenState extends State<SplashScreen>
               width: 300,
               height: 200,
               decoration: BoxDecoration(
-                color: AppColors.navbar.withOpacity(0.3),
+                color: AppColors.navbar.withAlpha((0.3 * 255).round()),
                 shape: BoxShape.circle,
               ),
             ),

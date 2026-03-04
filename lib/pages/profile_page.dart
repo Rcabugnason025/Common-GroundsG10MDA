@@ -40,6 +40,7 @@ class _ProfilePageState extends State<ProfilePage> {
       bio: _bioController.text,
       course: _courseController.text,
     );
+    if (!mounted) return;
 
     setState(() {
       // UserData is updated by AuthService
@@ -53,6 +54,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _logout() async {
     await AuthService().signOut();
+    if (!mounted) return;
     Navigator.of(context).pushNamedAndRemoveUntil('/signIn', (route) => false);
   }
 
@@ -76,7 +78,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   CircleAvatar(
                     radius: 50,
-                    backgroundColor: AppColors.primary.withOpacity(0.2),
+                    backgroundColor:
+                        AppColors.primary.withAlpha((0.2 * 255).round()),
                     child: Text(
                       _nameController.text.isNotEmpty
                           ? _nameController.text[0].toUpperCase()

@@ -144,8 +144,8 @@ categoryOptions = categoryOptions.toSet().toList();
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    colorScheme.primary.withOpacity(0.10),
-                    colorScheme.secondary.withOpacity(0.10),
+                    colorScheme.primary.withAlpha((0.10 * 255).round()),
+                    colorScheme.secondary.withAlpha((0.10 * 255).round()),
                   ],
                 ),
                 borderRadius: const BorderRadius.only(
@@ -158,7 +158,7 @@ categoryOptions = categoryOptions.toSet().toList();
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: colorScheme.primary.withOpacity(0.18),
+                      color: colorScheme.primary.withAlpha((0.18 * 255).round()),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
@@ -253,7 +253,7 @@ categoryOptions = categoryOptions.toSet().toList();
                         color: colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: colorScheme.outline.withOpacity(0.2),
+                          color: colorScheme.outline.withAlpha((0.2 * 255).round()),
                         ),
                       ),
                       child: Row(
@@ -462,7 +462,8 @@ categoryOptions = categoryOptions.toSet().toList();
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: colorScheme.primaryContainer.withOpacity(0.25),
+                        color: colorScheme.primaryContainer
+                            .withAlpha((0.25 * 255).round()),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Row(
@@ -489,7 +490,8 @@ categoryOptions = categoryOptions.toSet().toList();
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                color: colorScheme.surfaceContainerHighest
+                    .withAlpha((0.5 * 255).round()),
                 borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(24),
                   bottomRight: Radius.circular(24),

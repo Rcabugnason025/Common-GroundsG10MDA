@@ -16,7 +16,7 @@ class TaskSuccessDialog {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
+                color: Colors.green.withAlpha((0.1 * 255).round()),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.check_circle, color: Colors.green, size: 40),
@@ -32,7 +32,9 @@ class TaskSuccessDialog {
                   ? 'Your task has been updated successfully.'
                   : 'Your new task has been added successfully.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: colorScheme.onSurface.withOpacity(0.7)),
+              style: TextStyle(
+                color: colorScheme.onSurface.withAlpha((0.7 * 255).round()),
+              ),
             ),
           ],
         ),

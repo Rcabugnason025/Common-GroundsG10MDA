@@ -6,6 +6,7 @@ import 'package:commongrounds/widgets/task_delete_dialog.dart';
 import 'package:commongrounds/data/repositories/task_repository.dart';
 import 'package:commongrounds/data/repositories/firebase_task_repository.dart';
 import 'package:commongrounds/data/repositories/rest_task_repository.dart';
+import 'package:commongrounds/data/repositories/sqlite_task_repository.dart';
 import 'package:commongrounds/config/app_config.dart';
 
 class TasksPage extends StatefulWidget {
@@ -19,7 +20,7 @@ class _TasksPageState extends State<TasksPage> {
   late TaskRepository _repo;
   List<DetailedTask> _tasks = [];
   bool _loading = true;
-  String _backend = 'firebase';
+  String _backend = 'local';
 
   @override
   void initState() {
@@ -28,7 +29,10 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   void _selectBackend(String backend) {
-    if (backend == 'rest' && AppConfig.restBaseUrl.isNotEmpty) {
+    if (backend == 'local') {
+      _repo = SqliteTaskRepository();
+      _backend = 'local';
+    } else if (backend == 'rest' && AppConfig.restBaseUrl.isNotEmpty) {
       _repo = RestTaskRepository();
       _backend = 'rest';
     } else {
@@ -43,7 +47,13 @@ class _TasksPageState extends State<TasksPage> {
       _loading = true;
     });
     try {
-      final result = await _repo.fetchTasks();
+      var result = await _repo.fetchTasks();
+      if (_backend == 'local' && result.isEmpty) {
+        for (final task in mockDetailedTasks.take(5)) {
+          await _repo.createTask(task);
+        }
+        result = await _repo.fetchTasks();
+      }
       setState(() {
         _tasks = result;
         _loading = false;
@@ -153,7 +163,9 @@ class _TasksPageState extends State<TasksPage> {
         ),
         content: Text(
           'Do you want to edit this task now?',
-          style: TextStyle(color: colorScheme.onSurface.withOpacity(0.75)),
+          style: TextStyle(
+            color: colorScheme.onSurface.withAlpha((0.75 * 255).round()),
+          ),
         ),
         actions: [
           TextButton(
@@ -230,6 +242,10 @@ class _TasksPageState extends State<TasksPage> {
             onSelected: _selectBackend,
             itemBuilder: (context) => [
               const PopupMenuItem(
+                value: 'local',
+                child: Text('Use Local (SQLite)'),
+              ),
+              const PopupMenuItem(
                 value: 'firebase',
                 child: Text('Use Firebase'),
               ),
@@ -250,136 +266,162 @@ class _TasksPageState extends State<TasksPage> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _tasks.length,
-        itemBuilder: (context, index) {
-          final task = _tasks[index];
+              padding: const EdgeInsets.all(16),
+              itemCount: _tasks.length,
+              itemBuilder: (context, index) {
+                final task = _tasks[index];
 
-          return Dismissible(
-            key: UniqueKey(),
-            direction: DismissDirection.endToStart,
-            background: Container(
-              color: Colors.red,
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.only(right: 20),
-              child: const Icon(Icons.delete, color: Colors.white),
-            ),
-            onDismissed: (_) => _deleteTask(index),
-            child: Card(
-              elevation: 1,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(20),
-                onTap: () => _confirmEditTask(task, index),
-                onLongPress: () => _confirmEditTask(task, index),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 46,
-                        height: 46,
-                        decoration: BoxDecoration(
-                          color: colorScheme.secondary.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Icon(task.icon, color: colorScheme.secondary),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                return Dismissible(
+                  key: UniqueKey(),
+                  direction: DismissDirection.endToStart,
+                  background: Container(
+                    color: Colors.red,
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.only(right: 20),
+                    child: const Icon(Icons.delete, color: Colors.white),
+                  ),
+                  onDismissed: (_) => _deleteTask(index),
+                  child: Card(
+                    elevation: 1,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () => _confirmEditTask(task, index),
+                      onLongPress: () => _confirmEditTask(task, index),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
                           children: [
-                            Text(
-                              task.title,
-                              style: textTheme.bodyLarge?.copyWith(
-                                fontWeight: FontWeight.w600,
+                            Container(
+                              width: 46,
+                              height: 46,
+                              decoration: BoxDecoration(
+                                color: colorScheme.secondary.withAlpha(
+                                  (0.08 * 255).round(),
+                                ),
+                                borderRadius: BorderRadius.circular(16),
                               ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              task.subject,
-                              style: textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurface.withOpacity(0.8),
+                              child: Icon(
+                                task.icon,
+                                color: colorScheme.secondary,
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(height: 8),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 4,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 5,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: colorScheme.primary.withOpacity(0.08),
-                                    borderRadius: BorderRadius.circular(999),
-                                  ),
-                                  child: Text(
-                                    task.priority,
-                                    style: textTheme.labelSmall?.copyWith(
-                                      color: colorScheme.primary,
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    task.title,
+                                    style: textTheme.bodyLarge?.copyWith(
                                       fontWeight: FontWeight.w600,
                                     ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                ),
-                                GestureDetector(
-                                  onTap: () => _showStatusPicker(task, index),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 5,
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    task.subject,
+                                    style: textTheme.bodyMedium?.copyWith(
+                                      color: colorScheme.onSurface.withAlpha(
+                                        (0.8 * 255).round(),
+                                      ),
                                     ),
-                                    decoration: BoxDecoration(
-                                      color: colorScheme.surfaceContainerHighest,
-                                      borderRadius: BorderRadius.circular(999),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          task.status,
-                                          style: textTheme.labelSmall?.copyWith(
-                                            color: colorScheme.onSurface.withOpacity(0.85),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 4,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 5,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: colorScheme.primary.withAlpha(
+                                            (0.08 * 255).round(),
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            999,
                                           ),
                                         ),
-                                        const SizedBox(width: 4),
-                                        Icon(
-                                          Icons.arrow_drop_down,
-                                          size: 18,
-                                          color: colorScheme.onSurface.withOpacity(0.6),
+                                        child: Text(
+                                          task.priority,
+                                          style: textTheme.labelSmall?.copyWith(
+                                            color: colorScheme.primary,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                      GestureDetector(
+                                        onTap: () =>
+                                            _showStatusPicker(task, index),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 5,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: colorScheme
+                                                .surfaceContainerHighest,
+                                            borderRadius: BorderRadius.circular(
+                                              999,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                task.status,
+                                                style: textTheme.labelSmall
+                                                    ?.copyWith(
+                                                      color: colorScheme
+                                                          .onSurface
+                                                          .withAlpha(
+                                                            (0.85 * 255)
+                                                                .round(),
+                                                          ),
+                                                    ),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Icon(
+                                                Icons.arrow_drop_down,
+                                                size: 18,
+                                                color: colorScheme.onSurface
+                                                    .withAlpha(
+                                                      (0.6 * 255).round(),
+                                                    ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            LinearProgressIndicator(
-                              value: task.progress,
-                              backgroundColor: colorScheme.surfaceContainerHighest,
-                              minHeight: 6,
-                              borderRadius: BorderRadius.circular(999),
+                                  const SizedBox(height: 10),
+                                  LinearProgressIndicator(
+                                    value: task.progress,
+                                    backgroundColor:
+                                        colorScheme.surfaceContainerHighest,
+                                    minHeight: 6,
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }
-

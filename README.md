@@ -37,7 +37,7 @@ To run this project locally, ensure you have [Flutter](https://flutter.dev/docs/
 
 You can run the app on an emulator (Android/iOS) or in your web browser.
 
-**Note:** This project supports **Remote Data Management** using **Firebase Firestore** and a **REST API**. You can switch between these backends at runtime.
+**Note:** This project supports **Local + Remote Data Management** using **SQLite (sqflite)**, **Firebase Firestore**, and a **REST API**. You can switch between these backends at runtime from the Tasks page.
 
 **Run on Android/iOS Emulator:**
 ```bash
@@ -50,6 +50,9 @@ flutter run -d chrome
 ```
 
 ## Configuration
+
+### Local (SQLite) Setup
+- No setup required. The app creates a local SQLite database automatically on first run.
 
 ### Firebase Setup
 1.  Ensure `android/app/google-services.json` is present in your project.
@@ -66,12 +69,13 @@ flutter run -d chrome
 ## Features
 
 ### Milestone 2: Data Management (Sprints 3 & 4)
-- **Remote Data Persistence**:
-  - **Firebase Firestore**: Real-time cloud database integration for tasks.
+- **Local + Remote Data Persistence**:
+  - **SQLite (sqflite)**: Offline local task storage and CRUD.
+  - **Firebase Firestore**: Cloud database integration for tasks.
   - **REST API**: HTTP-based CRUD operations for tasks (configurable endpoint).
 - **Repository Pattern**:
-  - Abstracted data layer allowing seamless switching between Firebase and REST backends.
-  - **Runtime Switching**: Toggle between "Use Firebase" and "Use REST API" directly from the Tasks page.
+  - Abstracted data layer allowing seamless switching between Local (SQLite), Firebase, and REST backends.
+  - **Runtime Switching**: Toggle between backends directly from the Tasks page.
 - **Data Synchronization**:
   - Create, Read, Update, and Delete (CRUD) operations are fully synchronized with the selected remote backend.
 - **Local Fallback**:
