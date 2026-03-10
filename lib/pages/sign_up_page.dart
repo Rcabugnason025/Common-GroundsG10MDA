@@ -115,7 +115,6 @@ class _SignUpPageState extends State<SignUpPage>
       return;
     }
 
-    // Call AuthService
     final success = await AuthService().signUp(
       name: _nameController.text.trim(),
       email: _emailController.text.trim(),
@@ -136,7 +135,7 @@ class _SignUpPageState extends State<SignUpPage>
 
       Future.delayed(const Duration(milliseconds: 800), () {
         if (!mounted) return;
-        Navigator.of(context).pushReplacementNamed('/main');
+        Navigator.of(context).pushReplacementNamed('/welcome');
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
