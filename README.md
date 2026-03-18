@@ -81,6 +81,13 @@ class AppConfig {
 ### Sign Up Flow
 After creating an account, the app shows a short Welcome screen, then you can continue to the dashboard.
 
+## Testing
+Run the automated checks:
+```bash
+flutter analyze
+flutter test
+```
+
 ## Troubleshooting
 
 If you encounter issues with Android licenses, run:
